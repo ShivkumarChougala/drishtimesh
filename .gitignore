@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.pyc
+venv/
+.env
+
+# PostgreSQL backups
+backup/
+*.dump
+*.sql
+
+# Logs
+logs/
+*.log
+
+# Node
+node_modules/
+dist/
+
+# OS
+.DS_Store
+venv/
+**/venv/
