@@ -42,6 +42,7 @@ def network_stats():
         "active_nodes": active_nodes,
         "total_signals": total_signals,
         "total_ips": total_ips,
+        "unique_ips": total_ips,
         "malicious_ips": malicious_ips,
         "suspicious_ips": suspicious_ips,
         "signals_24h": signals_24h

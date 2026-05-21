@@ -42,22 +42,36 @@ export default function MeshStats() {
     <section className="stats-line">
       <div className="stat">
         <span>Relay</span>
-        <strong>{health}</strong>
+
+        <strong>
+          {health === "online"
+            ? "Healthy"
+            : health}
+        </strong>
       </div>
 
       <div className="stat">
-        <span>Nodes</span>
-        <strong>{stats?.total_nodes ?? "—"}</strong>
+        <span>Active nodes</span>
+
+        <strong>
+          {stats?.active_nodes ?? "—"}
+        </strong>
       </div>
 
       <div className="stat">
         <span>Signals</span>
-        <strong>{stats?.total_signals ?? "—"}</strong>
+
+        <strong>
+          {stats?.total_signals ?? "—"}
+        </strong>
       </div>
 
       <div className="stat">
-        <span>Unique IPs</span>
-        <strong>{stats?.unique_ips ?? "—"}</strong>
+        <span>Threat IPs</span>
+
+        <strong>
+          {stats?.unique_ips ?? "—"}
+        </strong>
       </div>
 
       {lastUpdated && (
