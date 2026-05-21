@@ -7,7 +7,6 @@ import MeshStats from "../components/MeshStats";
 import RecentActivity from "../components/RecentActivity";
 import TransparencySection from "../components/TransparencySection";
 import DeployTerminal from "../components/DeployTerminal";
-import DeployDocs from "../components/DeployDocs";
 import LookupCTA from "../components/LookupCTA";
 import Footer from "../components/Footer";
 import DeploySensorModal from "../components/DeploySensorModal";
@@ -26,7 +25,6 @@ export default function DeployPage() {
         <RecentActivity />
         <TransparencySection />
         <DeployTerminal />
-        <DeployDocs />
         <LookupCTA onDeploy={() => setDeployOpen(true)} />
       </main>
 
