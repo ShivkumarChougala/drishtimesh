@@ -7,12 +7,12 @@ from app.routes.lookup import router as lookup_router
 from app.routes.feed import router as feed_router
 from app.routes.nodes import router as nodes_router
 from app.routes.stats import router as stats_router
-
+from fastapi.staticfiles import StaticFiles
 app = FastAPI(
     title="DrishtiMesh Relay API",
     version="0.1.0"
 )
-
+app.mount("/downloads", StaticFiles(directory="static"), name="downloads")
 # CORS
 app.add_middleware(
     CORSMiddleware,
