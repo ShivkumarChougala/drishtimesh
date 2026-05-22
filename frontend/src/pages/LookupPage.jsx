@@ -6,7 +6,7 @@ import { lookupIp } from "../api/lookup";
 import "../styles/lookup.css";
 
 export default function LookupPage() {
-  const examples = ["45.153.34.114", "87.121.84.136", "185.220.101.4"];
+  const examples = ["45.148.10.121", "176.65.148.44", "103.150.30.30"];
 
   const [ip, setIp] = useState("");
   const [result, setResult] = useState(null);
@@ -14,25 +14,76 @@ export default function LookupPage() {
 
   async function handleSubmit(event) {
     event.preventDefault();
-
     if (!ip.trim()) return;
 
     try {
       setStatus("loading");
       setResult(null);
-
       const data = await lookupIp(ip.trim());
-
       setResult(data);
       setStatus("success");
     } catch {
-      setStatus("error");
-      setResult(null);
+      setStatus("success");
+      setResult({
+        ip: ip.trim(),
+        found: false,
+        verdict: "unknown",
+        score: 0,
+        confidence: "none",
+        total_signals: 0,
+        observed_by_nodes: 0,
+        first_seen: null,
+        last_seen: null,
+        signals: [],
+        community_summary: {
+          total_observations: 0,
+          community_nodes: 0,
+        },
+        context: {},
+      });
     }
   }
 
-  function useExample(value) {
-    setIp(value);
+  function formatDate(value) {
+    return value ? new Date(value).toLocaleString() : "Unknown";
+  }
+
+  function formatSignal(value) {
+    return value ? value.replaceAll("_", " ") : "Unknown";
+  }
+
+  function formatEvidence(signal) {
+    if (signal.raw_command) return signal.raw_command;
+
+    const labels = {
+      attack_chain_summary: "Multiple suspicious actions were seen in one session",
+      proxy_or_tunnel_attempt: "Attempted proxy tunnel through SSH",
+      interactive_access: "Successful login to honeypot shell",
+      ssh_bruteforce: "Repeated SSH login attempts",
+      system_reconnaissance: "Checked system details",
+      network_reconnaissance: "Checked network details",
+      payload_download_attempt: "Tried to download a payload",
+      execution_attempt: "Tried to run a command or file",
+    };
+
+    return labels[signal.signal_type] ||
+      signal.metadata?.evidence_summary ||
+      signal.metadata?.dst_ip ||
+      "Normalized honeypot signal";
+  }
+
+  function getExplanation() {
+    if (!result?.found) {
+      return "No community honeypot evidence has been observed for this IP yet.";
+    }
+
+    const types = [...new Set((result.signals || []).map((s) => formatSignal(s.signal_type)))];
+
+    if (!types.length) {
+      return "This IP has community observations, but no detailed signal evidence is available yet.";
+    }
+
+    return `Community honeypot sensors observed this IP performing: ${types.slice(0, 4).join(", ")}.`;
   }
 
   return (
@@ -40,179 +91,171 @@ export default function LookupPage() {
       <AnnouncementBar />
       <Navbar />
 
-      <main className="lookup-page">
-        <section className="lookup-hero">
-          <div className="kicker">IP lookup</div>
+      <main className="report-page">
+      <section className="search-panel">
+        <div>
+          <p className="eyebrow">DrishtiMesh IP Lookup</p>
+          <h1>Community honeypot intelligence report</h1>
+        </div>
 
-          <h1>Investigate attacker activity observed by community sensors.</h1>
+        <form onSubmit={handleSubmit} className="report-search">
+          <input
+            value={ip}
+            onChange={(event) => setIp(event.target.value)}
+            placeholder="Enter IP address"
+          />
+          <button>{status === "loading" ? "Checking..." : "Lookup"}</button>
+        </form>
 
-          <p>
-            Search an IP address to view reputation, observed activity,
-            and evidence collected from the DrishtiMesh network.
-          </p>
-
-          <form className="lookup-search" onSubmit={handleSubmit}>
-            <input
-              type="text"
-              placeholder="Enter IP address"
-              value={ip}
-              onChange={(event) => setIp(event.target.value)}
-            />
-            <button type="submit">
-              {status === "loading" ? "Analyzing..." : "Analyze IP"}
+        <div className="examples">
+          <span>Try:</span>
+          {examples.map((item) => (
+            <button key={item} type="button" onClick={() => setIp(item)}>
+              {item}
             </button>
-          </form>
+          ))}
+        </div>
+      </section>
 
-          <div className="lookup-examples">
-            <span>Try</span>
-            {examples.map((exampleIp) => (
-              <button
-                key={exampleIp}
-                type="button"
-                onClick={() => useExample(exampleIp)}
-              >
-                {exampleIp}
-              </button>
-            ))}
-          </div>
+      {!result && (
+        <section className="empty-report">
+          Search an IP address to generate a reputation report.
         </section>
+      )}
 
-        {status === "idle" && (
-          <section className="lookup-placeholder">
-            <p>Search an IP address to begin investigation.</p>
-          </section>
-        )}
+      {result && (
+        <section className="report-shell">
+          <div className="report-header">
+            <div>
+              <p className="eyebrow">Reputation report</p>
+              <h2>{result.ip}</h2>
+              <p className="updated">
+                Updated {formatDate(result.last_seen)} · Source: DrishtiMesh Community Mesh
+              </p>
+            </div>
 
-        {status === "error" && (
-          <section className="lookup-placeholder error">
-            <p>No intelligence found for this IP yet.</p>
-          </section>
-        )}
+            <div className="score-block">
+              <strong>{result.score}</strong>
+              <span className={`verdict-pill ${result.verdict}`}>
+                {result.verdict} · {result.confidence} confidence
+              </span>
+            </div>
+          </div>
 
-        {result && (
-          <section className="lookup-result-shell">
-            <div className="investigation-summary-card">
-              <div>
-                <div className="kicker">Investigation result</div>
-                <h2>{result.ip}</h2>
+          <div className="metric-grid">
+            <div>
+              <span>Signals</span>
+              <strong>{result.total_signals || 0}</strong>
+            </div>
+            <div>
+              <span>Community nodes</span>
+              <strong>{result.observed_by_nodes || 0}</strong>
+            </div>
+            <div>
+              <span>Verdict</span>
+              <strong>{result.verdict}</strong>
+            </div>
+            <div>
+              <span>Confidence</span>
+              <strong>{result.confidence}</strong>
+            </div>
+          </div>
 
-                <div className="verdict-row">
-                  <span className={`verdict-badge ${result.verdict}`}>
-                    {result.verdict}
-                  </span>
-                  <span className="score-pill">
-                    Score {result.score}/100
-                  </span>
-                  <span className="confidence-pill">
-                    {result.confidence} confidence
-                  </span>
-                </div>
+          <div className="report-grid">
+            <section className="card explanation-card">
+              <h3>Analyst Summary</h3>
+              <p>{getExplanation()}</p>
+
+              <div className="analyst-points">
+                <p>
+                  <strong>Evidence strength:</strong>{" "}
+                  {result.total_signals || 0} normalized signals from{" "}
+                  {result.observed_by_nodes || 0} community sensor.
+                </p>
+
+                <p>
+                  <strong>Last observed:</strong>{" "}
+                  {formatDate(result.last_seen)}.
+                </p>
               </div>
 
-              <div className="summary-metrics">
+              <div className="summary-meta">
+                Observed by {result.observed_by_nodes || 0} community sensor ·{" "}
+                {result.total_signals || 0} total signals
+              </div>
+            </section>
+
+            <section className="card context-card">
+              <h3>IP Context</h3>
+
+              <div className="context-grid">
                 <div>
-                  <span>Total signals</span>
-                  <strong>{result.total_signals}</strong>
+                  <span>Country</span>
+                  <strong>{result.context?.country || "Unknown"}</strong>
                 </div>
                 <div>
-                  <span>Observed nodes</span>
-                  <strong>{result.observed_by_nodes}</strong>
+                  <span>City</span>
+                  <strong>{result.context?.city || "Unknown"}</strong>
                 </div>
                 <div>
-                  <span>Last seen</span>
+                  <span>ASN</span>
+                  <strong>{result.context?.asn || "Unknown"}</strong>
+                </div>
+                <div>
+                  <span>ISP</span>
+                  <strong>{result.context?.isp || "Unknown"}</strong>
+                </div>
+                <div>
+                  <span>Region</span>
+                  <strong>{result.context?.region || "Unknown"}</strong>
+                </div>
+                <div>
+                  <span>Timezone</span>
+                  <strong>{result.context?.timezone || "Unknown"}</strong>
+                </div>
+              </div>
+            </section>
+          </div>
+
+          <section className="card evidence-card">
+            <h3>Signal Evidence</h3>
+
+            <div className="evidence-table">
+              <div className="evidence-row evidence-head">
+                <span>Type</span>
+                <span>Evidence</span>
+                <span>Source</span>
+                <span>Severity</span>
+                <span>Time</span>
+              </div>
+
+              {(result.signals || []).slice(0, 30).map((signal, index) => (
+                <div className="evidence-row" key={index}>
+                  <span>{formatSignal(signal.signal_type)}</span>
                   <strong>
-                    {result.last_seen
-                      ? new Date(result.last_seen).toLocaleString()
-                      : "Unknown"}
+                    {formatEvidence(signal)}
                   </strong>
+                  <span>{signal.sensor || "community"}</span>
+                  <em className={`severity ${signal.severity || "unknown"}`}>
+                    {signal.severity || "unknown"}
+                  </em>
+                  <span>{formatDate(signal.observed_at)}</span>
                 </div>
-                <div>
-                  <span>Signals loaded</span>
-                  <strong>{result.signals?.length || 0}</strong>
+              ))}
+
+              {(!result.signals || result.signals.length === 0) && (
+                <div className="evidence-row">
+                  <span>No signal</span>
+                  <strong>No community evidence available yet</strong>
+                  <span>DrishtiMesh</span>
+                  <em className="severity unknown">unknown</em>
+                  <span>Unknown</span>
                 </div>
-              </div>
-            </div>
-            <div className="why-flagged-card">
-              <div>
-                <div className="kicker">Evidence summary</div>
-                <h3>Why this IP was flagged</h3>
-              </div>
-
-              <div className="evidence-list">
-                {result.signals?.slice(0, 4).map((signal, index) => (
-                  <div className="evidence-item" key={index}>
-                    <span>{signal.signal_type?.replaceAll("_", " ")}</span>
-                    <strong>{signal.severity}</strong>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="observed-commands-card">
-              <div>
-                <div className="kicker">Command evidence</div>
-                <h3>Observed commands</h3>
-              </div>
-
-              <div className="commands-list">
-                {result.signals
-                  ?.filter((signal) => signal.raw_command)
-                  .slice(0, 6)
-                  .map((signal, index) => (
-                    <div className="command-row" key={index}>
-                      <code>{signal.raw_command}</code>
-                      <span>{signal.severity}</span>
-                    </div>
-                  ))}
-              </div>
-            </div>
-
-            <div className="network-confirmation-card">
-              <div>
-                <div className="kicker">Network confirmation</div>
-                <h3>Community sensor observations</h3>
-              </div>
-
-              <div className="confirmation-grid">
-                <div className="confirmation-item">
-                  <span>Observed nodes</span>
-                  <strong>{result.observed_by_nodes}</strong>
-                </div>
-
-                <div className="confirmation-item">
-                  <span>Total signals</span>
-                  <strong>{result.total_signals}</strong>
-                </div>
-
-                <div className="confirmation-item">
-                  <span>Confidence</span>
-                  <strong>{result.confidence}</strong>
-                </div>
-              </div>
-            </div>
-
-            <div className="recent-signals-card">
-              <div>
-                <div className="kicker">Recent activity</div>
-                <h3>Recent signals</h3>
-              </div>
-
-              <div className="signals-table">
-                {result.signals?.slice(0, 8).map((signal, index) => (
-                  <div className="signal-row" key={index}>
-                    <span>
-                      {signal.observed_at
-                        ? new Date(signal.observed_at).toLocaleString()
-                        : "Unknown time"}
-                    </span>
-                    <strong>{signal.signal_type?.replaceAll("_", " ")}</strong>
-                    <em>{signal.severity}</em>
-                  </div>
-                ))}
-              </div>
+              )}
             </div>
           </section>
-        )}
+        </section>
+      )}
       </main>
 
       <Footer />
