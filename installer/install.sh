@@ -277,7 +277,14 @@ install_agent() {
 
   mkdir -p "${AGENT_DIR}"
 
-  cp -r installer/payload/node-agent/* "${AGENT_DIR}/"
+  AGENT_BUNDLE_URL="${RELAY_URL}/downloads/node-agent.tar.gz"
+
+  curl -fsSL "${AGENT_BUNDLE_URL}" -o /tmp/drishtimesh-node-agent.tar.gz \
+    || fail "Failed to download DrishtiMesh agent bundle"
+
+  tar -xzf /tmp/drishtimesh-node-agent.tar.gz -C /tmp
+
+  cp -r /tmp/node-agent/* "${AGENT_DIR}/"
 
   log "Agent files deployed"
 
