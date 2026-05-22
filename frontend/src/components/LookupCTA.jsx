@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 export default function LookupCTA({ onDeploy }) {
   return (
     <section className="lookup">
@@ -12,7 +14,10 @@ export default function LookupCTA({ onDeploy }) {
 
         <div className="cta-row">
           <button className="primary" onClick={onDeploy}>Deploy sensor</button>
-          <button className="secondary">Open IP lookup ↗</button>
+
+          <Link to="/lookup" className="secondary">
+            Open IP lookup ↗
+          </Link>
         </div>
       </div>
     </section>
