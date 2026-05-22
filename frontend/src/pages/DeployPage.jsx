@@ -4,9 +4,9 @@ import AnnouncementBar from "../components/AnnouncementBar";
 import Navbar from "../components/Navbar";
 import Hero from "../components/Hero";
 import MeshStats from "../components/MeshStats";
+import CommunityContribution from "../components/CommunityContribution";
 import RecentActivity from "../components/RecentActivity";
 import TransparencySection from "../components/TransparencySection";
-import DeployTerminal from "../components/DeployTerminal";
 import LookupCTA from "../components/LookupCTA";
 import Footer from "../components/Footer";
 import DeploySensorModal from "../components/DeploySensorModal";
@@ -21,10 +21,16 @@ export default function DeployPage() {
 
       <main>
         <Hero onDeploy={() => setDeployOpen(true)} />
+
         <MeshStats />
+
+        <CommunityContribution />
+
         <RecentActivity />
+
         <TransparencySection />
-        <DeployTerminal />
+
+
         <LookupCTA onDeploy={() => setDeployOpen(true)} />
       </main>
 
