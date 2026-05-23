@@ -1,45 +1,41 @@
-import { useState } from "react";
-
-import AnnouncementBar from "../components/AnnouncementBar";
+import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Hero from "../components/Hero";
 import MeshStats from "../components/MeshStats";
-import CommunityContributions from "../components/CommunityContributions";
-import RecentActivity from "../components/RecentActivity";
 import TransparencySection from "../components/TransparencySection";
+import DeployDocs from "../components/DeployDocs";
+import DeployTerminal from "../components/DeployTerminal";
 import LookupCTA from "../components/LookupCTA";
+import RecentActivity from "../components/RecentActivity";
 import Footer from "../components/Footer";
-import DeploySensorModal from "../components/DeploySensorModal";
+import { isLoggedIn } from "../api/auth";
 
 export default function DeployPage() {
-  const [deployOpen, setDeployOpen] = useState(false);
+  const navigate = useNavigate();
+
+  function handleDeploy() {
+    if (isLoggedIn()) {
+      navigate("/dashboard");
+    } else {
+      navigate("/login");
+    }
+  }
 
   return (
     <>
-      <AnnouncementBar />
-      <Navbar onDeploy={() => setDeployOpen(true)} />
+      <Navbar onDeploy={handleDeploy} />
 
       <main>
-        <Hero onDeploy={() => setDeployOpen(true)} />
-
+        <Hero onDeploy={handleDeploy} />
         <MeshStats />
-
-        <CommunityContributions />
-
-        <RecentActivity />
-
         <TransparencySection />
-
-
-        <LookupCTA onDeploy={() => setDeployOpen(true)} />
+        <DeployTerminal />
+        <DeployDocs />
+        <RecentActivity />
+        <LookupCTA onDeploy={handleDeploy} />
       </main>
 
       <Footer />
-
-      <DeploySensorModal
-        open={deployOpen}
-        onClose={() => setDeployOpen(false)}
-      />
     </>
   );
 }
