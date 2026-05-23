@@ -4,7 +4,7 @@ import AnnouncementBar from "../components/AnnouncementBar";
 import Navbar from "../components/Navbar";
 import Hero from "../components/Hero";
 import MeshStats from "../components/MeshStats";
-import CommunityContribution from "../components/CommunityContribution";
+import CommunityContributions from "../components/CommunityContributions";
 import RecentActivity from "../components/RecentActivity";
 import TransparencySection from "../components/TransparencySection";
 import LookupCTA from "../components/LookupCTA";
@@ -24,7 +24,7 @@ export default function DeployPage() {
 
         <MeshStats />
 
-        <CommunityContribution />
+        <CommunityContributions />
 
         <RecentActivity />
 
