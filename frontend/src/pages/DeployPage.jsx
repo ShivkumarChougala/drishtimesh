@@ -3,8 +3,6 @@ import Navbar from "../components/Navbar";
 import Hero from "../components/Hero";
 import MeshStats from "../components/MeshStats";
 import TransparencySection from "../components/TransparencySection";
-import DeployDocs from "../components/DeployDocs";
-import DeployTerminal from "../components/DeployTerminal";
 import LookupCTA from "../components/LookupCTA";
 import RecentActivity from "../components/RecentActivity";
 import Footer from "../components/Footer";
@@ -28,10 +26,8 @@ export default function DeployPage() {
       <main>
         <Hero onDeploy={handleDeploy} />
         <MeshStats />
-        <TransparencySection />
-        <DeployTerminal />
-        <DeployDocs />
-        <RecentActivity />
+	          <RecentActivity />
+	  <TransparencySection />
         <LookupCTA onDeploy={handleDeploy} />
       </main>
 
