@@ -154,3 +154,69 @@ def node_heartbeat(
         "node_id": str(payload.node_id),
         "node_status": payload.status,
     }
+
+
+@router.get("/nodes/contributions")
+def node_contributions():
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    cur.execute(
+        """
+        SELECT
+            n.node_id,
+            COALESCE(n.node_name, LEFT(n.node_id::text, 8)) AS sensor_name,
+            n.sensor_type,
+            n.country,
+            n.region,
+            n.provider,
+            n.status,
+            n.last_seen,
+            COUNT(s.id) AS signals,
+            COUNT(DISTINCT s.src_ip) AS unique_ips,
+            CASE
+                WHEN n.last_seen >= NOW() - INTERVAL '2 minutes'
+                THEN 'online'
+                ELSE 'offline'
+            END AS live_status
+        FROM nodes n
+        LEFT JOIN signals s
+            ON s.node_id = n.node_id
+        GROUP BY
+            n.node_id,
+            n.node_name,
+            n.sensor_type,
+            n.country,
+            n.region,
+            n.provider,
+            n.status,
+            n.last_seen
+        ORDER BY signals DESC, n.last_seen DESC
+        LIMIT 5;
+        """
+    )
+
+    rows = cur.fetchall()
+
+    cur.close()
+    conn.close()
+
+    return {
+        "count": len(rows),
+        "results": [
+            {
+                "node_id": str(row["node_id"]),
+                "sensor_name": row["sensor_name"],
+                "sensor_type": row["sensor_type"],
+                "region": " · ".join(
+                    [x for x in [row["country"], row["region"]] if x]
+                ) or "Unknown region",
+                "provider": row["provider"],
+                "status": row["live_status"],
+                "signals": row["signals"],
+                "unique_ips": row["unique_ips"],
+                "last_seen": row["last_seen"],
+            }
+            for row in rows
+        ],
+    }
