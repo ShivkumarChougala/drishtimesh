@@ -1,9 +1,10 @@
-from fastapi import APIRouter, Header, HTTPException
+from fastapi import APIRouter, Header, HTTPException, Depends
 from pydantic import BaseModel
 from uuid import uuid4, UUID
 import secrets
 
 from app.db.database import get_db_connection
+from app.routes.auth import get_current_user
 
 
 router = APIRouter()
@@ -39,7 +40,6 @@ def verify_node_token(node_id: str, token: str):
     )
 
     node = cur.fetchone()
-
     cur.close()
     conn.close()
 
@@ -51,16 +51,16 @@ def verify_node_token(node_id: str, token: str):
 
 def get_bearer_token(authorization: str | None):
     if not authorization or not authorization.startswith("Bearer "):
-        raise HTTPException(
-            status_code=401,
-            detail="Missing Authorization Bearer token"
-        )
+        raise HTTPException(status_code=401, detail="Missing Authorization Bearer token")
 
     return authorization.replace("Bearer ", "").strip()
 
 
 @router.post("/nodes/register")
-def register_node(node: NodeRegisterIn):
+def register_node(
+    node: NodeRegisterIn,
+    current_user=Depends(get_current_user)
+):
     node_id = str(uuid4())
     api_token = secrets.token_urlsafe(32)
 
@@ -71,6 +71,7 @@ def register_node(node: NodeRegisterIn):
         """
         INSERT INTO nodes (
             node_id,
+            user_id,
             node_name,
             sensor_type,
             country,
@@ -81,11 +82,12 @@ def register_node(node: NodeRegisterIn):
             status,
             last_seen
         )
-        VALUES (%s,%s,%s,%s,%s,%s,%s,%s,'registered',NOW())
+        VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,'registered',NOW())
         RETURNING id;
         """,
         (
             node_id,
+            current_user["id"],
             node.node_name,
             node.sensor_type,
             node.country,
@@ -165,6 +167,7 @@ def node_contributions():
         """
         SELECT
             n.node_id,
+            n.api_token,
             COALESCE(n.node_name, LEFT(n.node_id::text, 8)) AS sensor_name,
             n.sensor_type,
             n.country,
@@ -206,6 +209,7 @@ def node_contributions():
         "results": [
             {
                 "node_id": str(row["node_id"]),
+                "api_token": row["api_token"],
                 "sensor_name": row["sensor_name"],
                 "sensor_type": row["sensor_type"],
                 "region": " · ".join(
@@ -219,4 +223,108 @@ def node_contributions():
             }
             for row in rows
         ],
+    }
+
+
+@router.get("/nodes/my")
+def my_nodes(current_user=Depends(get_current_user)):
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    cur.execute(
+        """
+        SELECT
+            n.id,
+            n.node_id,
+            n.api_token,
+            COALESCE(n.node_name, LEFT(n.node_id::text, 8)) AS sensor_name,
+            n.sensor_type,
+            n.country,
+            n.region,
+            n.provider,
+            n.status,
+            n.last_seen,
+            COUNT(s.id) AS signals,
+            COUNT(DISTINCT s.src_ip) AS unique_ips,
+            CASE
+                WHEN n.last_seen >= NOW() - INTERVAL '2 minutes'
+                THEN 'online'
+                ELSE 'offline'
+            END AS live_status
+        FROM nodes n
+        LEFT JOIN signals s
+            ON s.node_id = n.node_id
+        WHERE n.user_id = %s
+        GROUP BY
+            n.id,
+            n.node_id,
+            n.node_name,
+            n.sensor_type,
+            n.country,
+            n.region,
+            n.provider,
+            n.status,
+            n.last_seen
+        ORDER BY n.last_seen DESC;
+        """,
+        (current_user["id"],),
+    )
+
+    rows = cur.fetchall()
+
+    cur.close()
+    conn.close()
+
+    return {
+        "count": len(rows),
+        "results": [
+            {
+                "id": row["id"],
+                "node_id": str(row["node_id"]),
+                "api_token": row["api_token"],
+                "sensor_name": row["sensor_name"],
+                "sensor_type": row["sensor_type"],
+                "region": " · ".join([x for x in [row["country"], row["region"]] if x]) or "Unknown region",
+                "provider": row["provider"] or "Unknown",
+                "status": row["live_status"],
+                "signals": row["signals"],
+                "unique_ips": row["unique_ips"],
+                "last_seen": row["last_seen"],
+            }
+            for row in rows
+        ],
+    }
+
+
+@router.delete("/nodes/{node_id}")
+def delete_node(
+    node_id: str,
+    current_user=Depends(get_current_user)
+):
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    cur.execute(
+        """
+        DELETE FROM nodes
+        WHERE node_id = %s
+          AND user_id = %s
+        RETURNING id, node_id;
+        """,
+        (node_id, current_user["id"]),
+    )
+
+    deleted = cur.fetchone()
+    conn.commit()
+
+    cur.close()
+    conn.close()
+
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Sensor not found")
+
+    return {
+        "status": "ok",
+        "message": "Sensor deleted",
+        "node_id": str(deleted["node_id"]),
     }

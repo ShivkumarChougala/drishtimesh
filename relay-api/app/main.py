@@ -7,6 +7,7 @@ from app.routes.lookup import router as lookup_router
 from app.routes.feed import router as feed_router
 from app.routes.nodes import router as nodes_router
 from app.routes.stats import router as stats_router
+from app.routes.auth import router as auth_router
 from fastapi.staticfiles import StaticFiles
 app = FastAPI(
     title="DrishtiMesh Relay API",
@@ -17,7 +18,8 @@ app.mount("/downloads", StaticFiles(directory="static"), name="downloads")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://localhost:5173",
+	"http://localhost:5173",
+        "http://192.168.31.212:5173",
         "http://127.0.0.1:5173",
         "http://139.84.172.22:5173",
     ],
@@ -55,3 +57,4 @@ app.include_router(lookup_router)
 app.include_router(feed_router)
 app.include_router(nodes_router)
 app.include_router(stats_router)
+app.include_router(auth_router)
