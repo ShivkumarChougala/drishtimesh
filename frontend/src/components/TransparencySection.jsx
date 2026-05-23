@@ -1,20 +1,44 @@
 export default function TransparencySection() {
   return (
-    <section className="trust-strip">
-      <div className="trust-card">
-        <strong>Raw logs stay local</strong>
-        <p>Full honeypot interaction logs remain on contributor infrastructure.</p>
+    <section className="transparency-section">
+
+      <div className="section-heading">
+
+        <h2>What DrishtiMesh collects</h2>
+
+        <p>
+          Your raw honeypot logs stay on your own server.
+        </p>
       </div>
 
-      <div className="trust-card">
-        <strong>Normalized signals only</strong>
-        <p>Only safe telemetry is transmitted to the DrishtiMesh relay.</p>
+      <div className="trust-strip">
+
+        <div className="trust-card">
+          <strong>Logs stay on your server</strong>
+
+          <p>
+            Full honeypot interaction logs remain on your VPS.
+          </p>
+        </div>
+
+        <div className="trust-card">
+          <strong>Only attack signals are shared</strong>
+
+          <p>
+            DrishtiMesh only receives normalized attack telemetry.
+          </p>
+        </div>
+
+        <div className="trust-card">
+          <strong>You control the deployment</strong>
+
+          <p>
+            Sensors run fully on infrastructure you manage.
+          </p>
+        </div>
+
       </div>
 
-      <div className="trust-card">
-        <strong>Contributor-controlled deployment</strong>
-        <p>Sensors run entirely on your own VPS environment.</p>
-      </div>
     </section>
   );
 }
