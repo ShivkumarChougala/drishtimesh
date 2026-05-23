@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
-import { getHealth, getNetworkStats } from "../api/relay";
+import { getNetworkStats } from "../api/relay";
 
 export default function MeshStats() {
-  const [health, setHealth] = useState("checking");
   const [stats, setStats] = useState(null);
   const [lastUpdated, setLastUpdated] = useState(null);
 
@@ -11,20 +10,14 @@ export default function MeshStats() {
 
     async function load() {
       try {
-        const healthData = await getHealth();
         const statsData = await getNetworkStats();
 
         if (!active) return;
 
-        setHealth(healthData.status || "online");
         setStats(statsData);
         setLastUpdated(new Date());
       } catch (err) {
         console.error(err);
-
-        if (!active) return;
-
-        setHealth("offline");
       }
     }
 
@@ -38,40 +31,32 @@ export default function MeshStats() {
     };
   }, []);
 
+  const show = (value) => {
+    if (value === undefined || value === null) return "-";
+    if (typeof value === "number") return value.toLocaleString();
+    return value;
+  };
+
   return (
     <section className="stats-line">
       <div className="stat">
-        <span>Relay</span>
-
-        <strong>
-          {health === "online"
-            ? "Healthy"
-            : health}
-        </strong>
+        <span>Active Sensors</span>
+        <strong>{show(stats?.active_nodes)}</strong>
       </div>
 
       <div className="stat">
-        <span>Active nodes</span>
-
-        <strong>
-          {stats?.active_nodes ?? "—"}
-        </strong>
+        <span>Threat Signals</span>
+        <strong>{show(stats?.total_signals)}</strong>
       </div>
 
       <div className="stat">
-        <span>Signals</span>
-
-        <strong>
-          {stats?.total_signals ?? "—"}
-        </strong>
+        <span>Malicious IPs</span>
+        <strong>{show(stats?.malicious_ips)}</strong>
       </div>
 
       <div className="stat">
-        <span>Threat IPs</span>
-
-        <strong>
-          {stats?.unique_ips ?? "—"}
-        </strong>
+        <span>Unique Attackers</span>
+        <strong>{show(stats?.unique_ips)}</strong>
       </div>
 
       {lastUpdated && (
