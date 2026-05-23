@@ -18,3 +18,7 @@ export function registerNode(payload = {}) {
     body: JSON.stringify(payload),
   });
 }
+
+export function getNodeContributions() {
+  return apiFetch("/nodes/contributions");
+}
