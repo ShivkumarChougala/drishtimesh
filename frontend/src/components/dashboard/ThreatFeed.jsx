@@ -3,7 +3,6 @@ import { getDashboardLiveEvents } from "../../api/dashboard";
 
 function formatTime(value) {
   if (!value) return "unknown";
-
   try {
     return new Date(value).toLocaleString();
   } catch {
@@ -18,19 +17,29 @@ function normalizeVerdict(value) {
 export default function ThreatFeed() {
   const [events, setEvents] = useState([]);
   const [status, setStatus] = useState("loading");
+  const [lastUpdated, setLastUpdated] = useState(null);
+
+  async function loadEvents(silent = false) {
+    try {
+      if (!silent) setStatus("loading");
+
+      const data = await getDashboardLiveEvents(12);
+      setEvents(data.results || []);
+      setLastUpdated(new Date());
+      setStatus("ready");
+    } catch {
+      if (!silent) setStatus("error");
+    }
+  }
 
   useEffect(() => {
-    async function loadEvents() {
-      try {
-        const data = await getDashboardLiveEvents(12);
-        setEvents(data.results || []);
-        setStatus("ready");
-      } catch {
-        setStatus("error");
-      }
-    }
-
     loadEvents();
+
+    const timer = setInterval(() => {
+      loadEvents(true);
+    }, 10000);
+
+    return () => clearInterval(timer);
   }, []);
 
   return (
@@ -38,8 +47,16 @@ export default function ThreatFeed() {
       <div className="feed-head">
         <div>
           <h2>Live Threat Feed</h2>
-          <p className="dash-muted">Latest signals from your deployed sensors.</p>
+          <p className="dash-muted">
+            Latest signals from your deployed sensors.
+          </p>
+          {lastUpdated && (
+            <small className="feed-updated">
+              Updated {lastUpdated.toLocaleTimeString()}
+            </small>
+          )}
         </div>
+
         <span className="live-pill">Live</span>
       </div>
 
@@ -61,7 +78,7 @@ export default function ThreatFeed() {
             const verdictClass = normalizeVerdict(event.verdict || event.severity);
 
             return (
-              <div className="threat-item" key={`${event.src_ip}-${index}`}>
+              <div className="threat-item" key={`${event.src_ip}-${event.observed_at}-${index}`}>
                 <div>
                   <strong>{event.src_ip}</strong>
                   <p>
