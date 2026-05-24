@@ -136,18 +136,33 @@ def dashboard_timeline(
 
     cur.execute(
         """
+        WITH buckets AS (
+            SELECT generate_series(
+                date_trunc('hour', NOW() - (%s || ' hours')::interval),
+                date_trunc('hour', NOW()),
+                INTERVAL '1 hour'
+            ) AS bucket
+        ),
+        signal_counts AS (
+            SELECT
+                date_trunc('hour', s.observed_at) AS bucket,
+                COUNT(*) AS signals
+            FROM signals s
+            JOIN nodes n
+                ON s.node_id = n.node_id
+            WHERE n.user_id = %s
+              AND s.observed_at >= NOW() - (%s || ' hours')::interval
+            GROUP BY bucket
+        )
         SELECT
-            date_trunc('hour', s.observed_at) AS bucket,
-            COUNT(*) AS signals
-        FROM signals s
-        JOIN nodes n
-            ON s.node_id = n.node_id
-        WHERE n.user_id = %s
-          AND s.observed_at >= NOW() - (%s || ' hours')::interval
-        GROUP BY bucket
-        ORDER BY bucket ASC;
+            b.bucket,
+            COALESCE(sc.signals, 0) AS signals
+        FROM buckets b
+        LEFT JOIN signal_counts sc
+            ON b.bucket = sc.bucket
+        ORDER BY b.bucket ASC;
         """,
-        (current_user["id"], hours)
+        (hours, current_user["id"], hours)
     )
 
     rows = cur.fetchall()
