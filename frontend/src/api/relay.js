@@ -22,3 +22,9 @@ export function registerNode(payload = {}) {
 export function getNodeContributions() {
   return apiFetch("/nodes/contributions");
 }
+
+export function deleteNode(nodeId) {
+  return apiFetch(`/nodes/${nodeId}`, {
+    method: "DELETE",
+  });
+}

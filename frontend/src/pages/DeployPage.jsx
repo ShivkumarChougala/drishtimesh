@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
+import AnnouncementBar from "../components/AnnouncementBar";
 import Hero from "../components/Hero";
 import MeshStats from "../components/MeshStats";
 import TransparencySection from "../components/TransparencySection";
@@ -22,7 +23,8 @@ export default function DeployPage() {
   return (
     <>
       <Navbar onDeploy={handleDeploy} />
-
+	
+	      <AnnouncementBar />
       <main>
         <Hero onDeploy={handleDeploy} />
         <MeshStats />
