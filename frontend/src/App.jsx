@@ -8,6 +8,7 @@ import DashboardPage from "./pages/DashboardPage";
 
 import "./styles/deploy.css";
 import "./styles/auth.css";
+import "./styles/dashboard.css";
 
 export default function App() {
   return (
