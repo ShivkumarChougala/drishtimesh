@@ -215,6 +215,49 @@ export default function LookupPage() {
                 </div>
               </div>
             </section>
+
+            <section className="card intel-card">
+              <h3>Threat Intel</h3>
+
+              {result.threat_intel?.matched ? (
+                <>
+                  <div className="intel-summary">
+                    <strong>
+                      {result.threat_intel.match_count} threat intel match
+                      {result.threat_intel.match_count > 1 ? "es" : ""}
+                    </strong>
+                    <p>Sources: {result.threat_intel.sources.join(", ")}</p>
+                  </div>
+
+                  <div className="intel-list">
+                    {result.threat_intel.matches.map((match, index) => (
+                      <div className="intel-item" key={index}>
+                        <div>
+                          <span>Matched Range</span>
+                          <strong>{match.indicator_value}</strong>
+                        </div>
+                        <div>
+                          <span>Category</span>
+                          <strong>{match.category}</strong>
+                        </div>
+                        <div>
+                          <span>Confidence</span>
+                          <strong>{match.confidence}</strong>
+                        </div>
+                        <div>
+                          <span>Source</span>
+                          <strong>{match.source_name}</strong>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              ) : (
+                <div className="intel-empty">
+                  No open-source threat intelligence match found.
+                </div>
+              )}
+            </section>
           </div>
 
           <section className="card evidence-card">
