@@ -9,6 +9,7 @@ from app.routes.nodes import router as nodes_router
 from app.routes.stats import router as stats_router
 from app.routes.auth import router as auth_router
 from app.routes.dashboard import router as dashboard_router
+from app.routes.threat_intel import router as threat_intel_router
 from fastapi.staticfiles import StaticFiles
 app = FastAPI(
     title="DrishtiMesh Relay API",
@@ -59,4 +60,5 @@ app.include_router(feed_router)
 app.include_router(nodes_router)
 app.include_router(stats_router)
 app.include_router(auth_router)
+app.include_router(threat_intel_router)
 app.include_router(dashboard_router)
