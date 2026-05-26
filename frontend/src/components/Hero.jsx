@@ -1,15 +1,55 @@
 import { Link } from "react-router-dom";
+import Hyperspeed from "./backgrounds/Hyperspeed";
 
 export default function Hero({ onDeploy }) {
   return (
     <section className="hero">
+      <div className="hero-hyperspeed">
+        <Hyperspeed
+          effectOptions={{
+            distortion: "turbulentDistortion",
+
+            length: 320,
+            roadWidth: 10,
+            islandWidth: 2,
+            lanesPerRoad: 4,
+
+            fov: 90,
+            fovSpeedUp: 120,
+            speedUp: 0.38,
+
+            carLightsFade: 0.32,
+
+            totalSideLightSticks: 30,
+            lightPairsPerRoadWay: 50,
+
+            colors: {
+              roadColor: 0x05070d,
+              islandColor: 0x081018,
+              background: 0x000000,
+
+              shoulderLines: 0x0f172a,
+              brokenLines: 0x0f172a,
+
+              leftCars: [
+                0x06b6d4,
+                0x0891b2,
+                0x155e75
+              ],
+
+              rightCars: [
+                0x22c55e,
+                0x14b8a6,
+                0x0f766e
+              ],
+
+              sticks: 0x06b6d4,
+            },
+          }}
+        />
+      </div>
+
       <div className="mesh-bg"></div>
-      <div className="orb"></div>
-      <div className="node n1"></div>
-      <div className="node n2"></div>
-      <div className="node n3"></div>
-      <div className="node n4"></div>
-      <div className="node n5"></div>
 
       <div className="hero-content">
         <div className="eyebrow">distributed sensor infrastructure</div>
