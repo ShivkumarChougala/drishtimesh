@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 from app.db.database import get_db_connection
 from app.services.ip_context import get_ip_context
+from app.services.threat_intel import lookup_threat_intel
 
 router = APIRouter()
 
@@ -59,6 +60,7 @@ def lookup_ip(ip: str):
     conn.close()
 
     context = get_ip_context(ip)
+    threat_intel = lookup_threat_intel(ip)
 
     if not reputation:
         return {
@@ -76,6 +78,7 @@ def lookup_ip(ip: str):
                 "last_seen": None,
             },
             "context": context,
+        "threat_intel": threat_intel,
         }
 
     return {
@@ -97,4 +100,5 @@ def lookup_ip(ip: str):
             "network": "DrishtiMesh Community Honeypot Mesh",
         },
         "context": context,
+        "threat_intel": threat_intel,
     }
