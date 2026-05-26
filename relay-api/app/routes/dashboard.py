@@ -235,6 +235,8 @@ def dashboard_sensors(current_user=Depends(get_current_user)):
             n.provider,
             n.last_seen,
             CASE
+                WHEN n.status = 'registered'
+                THEN 'registered'
                 WHEN n.last_seen >= NOW() - INTERVAL '2 minutes'
                 THEN 'online'
                 ELSE 'offline'
@@ -252,6 +254,7 @@ def dashboard_sensors(current_user=Depends(get_current_user)):
             n.country,
             n.region,
             n.provider,
+            n.status,
             n.last_seen
         ORDER BY n.last_seen DESC NULLS LAST;
         """,

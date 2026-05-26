@@ -21,7 +21,6 @@ class NodeRegisterIn(BaseModel):
 
 class HeartbeatIn(BaseModel):
     node_id: UUID
-    status: str = "online"
     version: str = "0.1.0"
 
 
@@ -57,10 +56,7 @@ def get_bearer_token(authorization: str | None):
 
 
 @router.post("/nodes/register")
-def register_node(
-    node: NodeRegisterIn,
-    current_user=Depends(get_current_user)
-):
+def register_node(node: NodeRegisterIn, current_user=Depends(get_current_user)):
     node_id = str(uuid4())
     api_token = secrets.token_urlsafe(32)
 
@@ -70,19 +66,10 @@ def register_node(
     cur.execute(
         """
         INSERT INTO nodes (
-            node_id,
-            user_id,
-            node_name,
-            sensor_type,
-            country,
-            region,
-            provider,
-            ip_address,
-            api_token,
-            status,
-            last_seen
+            node_id, user_id, node_name, sensor_type, country, region,
+            provider, ip_address, api_token, status, last_seen
         )
-        VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,'registered',NOW())
+        VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,'registered',NULL)
         RETURNING id;
         """,
         (
@@ -100,7 +87,6 @@ def register_node(
 
     row = cur.fetchone()
     conn.commit()
-
     cur.close()
     conn.close()
 
@@ -110,14 +96,12 @@ def register_node(
         "node_id": node_id,
         "api_token": api_token,
         "sensor_type": node.sensor_type,
+        "node_status": "registered",
     }
 
 
 @router.post("/nodes/heartbeat")
-def node_heartbeat(
-    payload: HeartbeatIn,
-    authorization: str | None = Header(default=None)
-):
+def node_heartbeat(payload: HeartbeatIn, authorization: str | None = Header(default=None)):
     token = get_bearer_token(authorization)
     verify_node_token(str(payload.node_id), token)
 
@@ -126,36 +110,41 @@ def node_heartbeat(
 
     cur.execute(
         """
-        INSERT INTO node_heartbeats (
-            node_id,
-            status,
-            version
-        )
-        VALUES (%s,%s,%s);
+        INSERT INTO node_heartbeats (node_id, status, version)
+        VALUES (%s,'online',%s);
         """,
-        (str(payload.node_id), payload.status, payload.version),
+        (str(payload.node_id), payload.version),
     )
 
     cur.execute(
         """
         UPDATE nodes
-        SET status = %s,
+        SET status = 'online',
             last_seen = NOW()
         WHERE node_id = %s;
         """,
-        (payload.status, str(payload.node_id)),
+        (str(payload.node_id),),
     )
 
     conn.commit()
-
     cur.close()
     conn.close()
 
     return {
         "status": "ok",
         "node_id": str(payload.node_id),
-        "node_status": payload.status,
+        "node_status": "online",
     }
+
+
+def live_status_sql():
+    return """
+            CASE
+                WHEN n.status = 'registered' THEN 'registered'
+                WHEN n.last_seen >= NOW() - INTERVAL '2 minutes' THEN 'online'
+                ELSE 'offline'
+            END AS live_status
+    """
 
 
 @router.get("/nodes/contributions")
@@ -164,7 +153,7 @@ def node_contributions():
     cur = conn.cursor()
 
     cur.execute(
-        """
+        f"""
         SELECT
             n.node_id,
             n.api_token,
@@ -177,30 +166,18 @@ def node_contributions():
             n.last_seen,
             COUNT(s.id) AS signals,
             COUNT(DISTINCT s.src_ip) AS unique_ips,
-            CASE
-                WHEN n.last_seen >= NOW() - INTERVAL '2 minutes'
-                THEN 'online'
-                ELSE 'offline'
-            END AS live_status
+            {live_status_sql()}
         FROM nodes n
-        LEFT JOIN signals s
-            ON s.node_id = n.node_id
+        LEFT JOIN signals s ON s.node_id = n.node_id
         GROUP BY
-            n.node_id,
-            n.node_name,
-            n.sensor_type,
-            n.country,
-            n.region,
-            n.provider,
-            n.status,
-            n.last_seen
-        ORDER BY signals DESC, n.last_seen DESC
+            n.node_id, n.node_name, n.sensor_type, n.country, n.region,
+            n.provider, n.status, n.last_seen
+        ORDER BY signals DESC, n.last_seen DESC NULLS LAST
         LIMIT 5;
         """
     )
 
     rows = cur.fetchall()
-
     cur.close()
     conn.close()
 
@@ -212,9 +189,7 @@ def node_contributions():
                 "api_token": row["api_token"],
                 "sensor_name": row["sensor_name"],
                 "sensor_type": row["sensor_type"],
-                "region": " · ".join(
-                    [x for x in [row["country"], row["region"]] if x]
-                ) or "Unknown region",
+                "region": " · ".join([x for x in [row["country"], row["region"]] if x]) or "Unknown region",
                 "provider": row["provider"],
                 "status": row["live_status"],
                 "signals": row["signals"],
@@ -232,7 +207,7 @@ def my_nodes(current_user=Depends(get_current_user)):
     cur = conn.cursor()
 
     cur.execute(
-        """
+        f"""
         SELECT
             n.id,
             n.node_id,
@@ -246,32 +221,19 @@ def my_nodes(current_user=Depends(get_current_user)):
             n.last_seen,
             COUNT(s.id) AS signals,
             COUNT(DISTINCT s.src_ip) AS unique_ips,
-            CASE
-                WHEN n.last_seen >= NOW() - INTERVAL '2 minutes'
-                THEN 'online'
-                ELSE 'offline'
-            END AS live_status
+            {live_status_sql()}
         FROM nodes n
-        LEFT JOIN signals s
-            ON s.node_id = n.node_id
+        LEFT JOIN signals s ON s.node_id = n.node_id
         WHERE n.user_id = %s
         GROUP BY
-            n.id,
-            n.node_id,
-            n.node_name,
-            n.sensor_type,
-            n.country,
-            n.region,
-            n.provider,
-            n.status,
-            n.last_seen
-        ORDER BY n.last_seen DESC;
+            n.id, n.node_id, n.node_name, n.sensor_type, n.country,
+            n.region, n.provider, n.status, n.last_seen
+        ORDER BY n.last_seen DESC NULLS LAST;
         """,
         (current_user["id"],),
     )
 
     rows = cur.fetchall()
-
     cur.close()
     conn.close()
 
@@ -297,10 +259,7 @@ def my_nodes(current_user=Depends(get_current_user)):
 
 
 @router.delete("/nodes/{node_id}")
-def delete_node(
-    node_id: str,
-    current_user=Depends(get_current_user)
-):
+def delete_node(node_id: str, current_user=Depends(get_current_user)):
     conn = get_db_connection()
     cur = conn.cursor()
 
@@ -316,7 +275,6 @@ def delete_node(
 
     deleted = cur.fetchone()
     conn.commit()
-
     cur.close()
     conn.close()
 
