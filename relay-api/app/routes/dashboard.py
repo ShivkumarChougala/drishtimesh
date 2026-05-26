@@ -233,8 +233,12 @@ def dashboard_sensors(current_user=Depends(get_current_user)):
             n.country,
             n.region,
             n.provider,
-            n.status,
             n.last_seen,
+            CASE
+                WHEN n.last_seen >= NOW() - INTERVAL '2 minutes'
+                THEN 'online'
+                ELSE 'offline'
+            END AS status,
             COUNT(s.id) AS signals,
             COUNT(DISTINCT s.src_ip) AS unique_ips
         FROM nodes n
@@ -248,7 +252,6 @@ def dashboard_sensors(current_user=Depends(get_current_user)):
             n.country,
             n.region,
             n.provider,
-            n.status,
             n.last_seen
         ORDER BY n.last_seen DESC NULLS LAST;
         """,
