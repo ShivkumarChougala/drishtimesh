@@ -209,7 +209,10 @@ install_cowrie() {
   systemctl stop cowrie >/dev/null 2>&1 || true
 
   rm -rf "${COWRIE_DIR}"
-  git clone https://github.com/cowrie/cowrie "${COWRIE_DIR}" || fail "Failed to clone Cowrie repository"
+  COWRIE_REF="v2.6.1"
+
+  git clone --depth 1 --branch "${COWRIE_REF}" https://github.com/cowrie/cowrie "${COWRIE_DIR}" \
+    || fail "Failed to clone Cowrie ${COWRIE_REF}"
 
   python3 -m venv "${COWRIE_DIR}/cowrie-env"
 
@@ -218,7 +221,7 @@ install_cowrie() {
   "${COWRIE_DIR}/cowrie-env/bin/pip" install -e "${COWRIE_DIR}" >/dev/null 2>&1
 
   mkdir -p "${COWRIE_DIR}/etc"
-  cp "${COWRIE_DIR}/src/cowrie/data/etc/cowrie.cfg.dist" "${COWRIE_DIR}/etc/cowrie.cfg"
+  cp "${COWRIE_DIR}/etc/cowrie.cfg.dist" "${COWRIE_DIR}/etc/cowrie.cfg"
 
   mkdir -p "${COWRIE_DIR}/var/log/cowrie"
   touch "${COWRIE_DIR}/var/log/cowrie/cowrie.json"
