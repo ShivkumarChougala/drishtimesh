@@ -9,23 +9,14 @@ const ranges = [
 ];
 
 function formatBucket(value, hours) {
-  if (!value) return "";
-
   const date = new Date(value);
-
   if (Number.isNaN(date.getTime())) return "";
 
   if (hours > 24) {
-    return date.toLocaleDateString(undefined, {
-      month: "short",
-      day: "numeric",
-    });
+    return date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
   }
 
-  return date.toLocaleTimeString(undefined, {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  return date.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
 }
 
 export default function SignalTimeline() {
@@ -48,31 +39,39 @@ export default function SignalTimeline() {
     loadTimeline();
   }, [hours]);
 
-  const maxSignals = Math.max(
-    ...timeline.map((x) => Number(x.signals || 0)),
-    1
-  );
+  const activeTimeline = timeline.filter((item) => Number(item.signals || 0) > 0);
+  const displayTimeline = activeTimeline.length > 0 ? activeTimeline : timeline;
+
+  const maxSignals = Math.max(...displayTimeline.map((x) => Number(x.signals || 0)), 1);
+  const totalSignals = timeline.reduce((sum, item) => sum + Number(item.signals || 0), 0);
+  const activeBuckets = activeTimeline.length;
 
   return (
-    <section className="dash-panel timeline-panel">
+    <section className="dash-panel timeline-panel enterprise-timeline">
       <div className="timeline-top">
         <div>
-          <h2>Signal Volume Timeline</h2>
-          <p className="dash-muted">
-            Real attack signal activity across the selected window.
-          </p>
+          <span className="timeline-kicker">Telemetry</span>
+          <h2>Signal Activity</h2>
+          <p className="dash-muted">Attack signal volume across the selected time window.</p>
         </div>
 
-        <div className="range-tabs">
-          {ranges.map((range) => (
-            <button
-              key={range.value}
-              className={hours === range.value ? "active" : ""}
-              onClick={() => setHours(range.value)}
-            >
-              {range.label}
-            </button>
-          ))}
+        <div className="timeline-actions">
+          <div className="timeline-summary">
+            <strong>{totalSignals}</strong>
+            <span>total signals</span>
+          </div>
+
+          <div className="range-tabs">
+            {ranges.map((range) => (
+              <button
+                key={range.value}
+                className={hours === range.value ? "active" : ""}
+                onClick={() => setHours(range.value)}
+              >
+                {range.label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -86,27 +85,43 @@ export default function SignalTimeline() {
         </div>
       )}
 
-      {status === "ready" && timeline.length > 0 && (
-        <div className="timeline-chart">
-          {timeline.map((item, index) => {
-            const signals = Number(item.signals || 0);
-            const height = Math.max((signals / maxSignals) * 210, 18);
-
-            return (
-              <div className="timeline-bar-wrap" key={`${item.bucket}-${index}`}>
-                <div className="timeline-value">{signals}</div>
-
-                <div
-                  className="timeline-bar"
-                  title={`${signals} signals`}
-                  style={{ height: `${height}px` }}
-                />
-
-                <small>{formatBucket(item.bucket, hours)}</small>
-              </div>
-            );
-          })}
+      {status === "ready" && timeline.length > 0 && totalSignals === 0 && (
+        <div className="empty-state">
+          <strong>No signals in this window</strong>
+          <p className="dash-muted">Try 24h or 7d to view older activity.</p>
         </div>
+      )}
+
+      {status === "ready" && timeline.length > 0 && totalSignals > 0 && (
+        <>
+          <div className="timeline-meta">
+            <span>{activeBuckets} active buckets</span>
+            <span>Peak {maxSignals}</span>
+          </div>
+
+          <div className="timeline-chart">
+            {displayTimeline.map((item, index) => {
+              const signals = Number(item.signals || 0);
+              const height = signals === 0 ? 4 : Math.max((signals / maxSignals) * 180, 14);
+
+              return (
+                <div className="timeline-bar-wrap" key={`${item.bucket}-${index}`}>
+                  <div className={signals > 0 ? "timeline-value" : "timeline-value muted"}>
+                    {signals > 0 ? signals : ""}
+                  </div>
+
+                  <div
+                    className={signals > 0 ? "timeline-bar" : "timeline-bar empty"}
+                    title={`${signals} signals`}
+                    style={{ height: `${height}px` }}
+                  />
+
+                  <small>{formatBucket(item.bucket, hours)}</small>
+                </div>
+              );
+            })}
+          </div>
+        </>
       )}
     </section>
   );
