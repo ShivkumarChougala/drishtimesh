@@ -6,6 +6,7 @@ import MeshStats from "../components/MeshStats";
 import TransparencySection from "../components/TransparencySection";
 import LookupCTA from "../components/LookupCTA";
 import RecentActivity from "../components/RecentActivity";
+import ResourcesPreview from "../components/ResourcesPreview";
 import Footer from "../components/Footer";
 import { isLoggedIn } from "../api/auth";
 
@@ -29,6 +30,7 @@ export default function DeployPage() {
         <Hero onDeploy={handleDeploy} />
         <MeshStats />
 	          <RecentActivity />
+        <ResourcesPreview />
 	  <TransparencySection />
         <LookupCTA onDeploy={handleDeploy} />
       </main>
