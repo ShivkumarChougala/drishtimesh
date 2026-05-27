@@ -3,29 +3,39 @@ from app.db.database import get_db_connection
 
 router = APIRouter()
 
+ACTIVE_WINDOW_MINUTES = 5
+
 
 @router.get("/network/stats")
 def network_stats():
     conn = get_db_connection()
     cur = conn.cursor()
 
-    cur.execute("SELECT COUNT(*) AS total_nodes FROM nodes;")
-    total_nodes = cur.fetchone()["total_nodes"]
-
-    cur.execute("SELECT COUNT(*) AS active_nodes FROM nodes WHERE status = 'online';")
-    active_nodes = cur.fetchone()["active_nodes"]
+    cur.execute("""
+        SELECT
+            COUNT(*) AS total_nodes,
+            COUNT(*) FILTER (
+                WHERE last_seen >= NOW() - (%s * INTERVAL '1 minute')
+            ) AS active_nodes,
+            COUNT(*) FILTER (
+                WHERE last_seen IS NULL
+                   OR last_seen < NOW() - (%s * INTERVAL '1 minute')
+            ) AS offline_nodes
+        FROM nodes;
+    """, (ACTIVE_WINDOW_MINUTES, ACTIVE_WINDOW_MINUTES))
+    node_stats = cur.fetchone()
 
     cur.execute("SELECT COUNT(*) AS total_signals FROM signals;")
     total_signals = cur.fetchone()["total_signals"]
 
-    cur.execute("SELECT COUNT(*) AS total_ips FROM ip_reputation;")
-    total_ips = cur.fetchone()["total_ips"]
-
-    cur.execute("SELECT COUNT(*) AS malicious_ips FROM ip_reputation WHERE verdict = 'malicious';")
-    malicious_ips = cur.fetchone()["malicious_ips"]
-
-    cur.execute("SELECT COUNT(*) AS suspicious_ips FROM ip_reputation WHERE verdict = 'suspicious';")
-    suspicious_ips = cur.fetchone()["suspicious_ips"]
+    cur.execute("""
+        SELECT
+            COUNT(*) AS total_ips,
+            COUNT(*) FILTER (WHERE verdict = 'malicious') AS malicious_ips,
+            COUNT(*) FILTER (WHERE verdict = 'suspicious') AS suspicious_ips
+        FROM ip_reputation;
+    """)
+    ip_stats = cur.fetchone()
 
     cur.execute("""
         SELECT COUNT(*) AS signals_24h
@@ -38,12 +48,14 @@ def network_stats():
     conn.close()
 
     return {
-        "total_nodes": total_nodes,
-        "active_nodes": active_nodes,
+        "total_nodes": node_stats["total_nodes"],
+        "active_nodes": node_stats["active_nodes"],
+        "offline_nodes": node_stats["offline_nodes"],
+        "active_window_minutes": ACTIVE_WINDOW_MINUTES,
         "total_signals": total_signals,
-        "total_ips": total_ips,
-        "unique_ips": total_ips,
-        "malicious_ips": malicious_ips,
-        "suspicious_ips": suspicious_ips,
-        "signals_24h": signals_24h
+        "total_ips": ip_stats["total_ips"],
+        "unique_ips": ip_stats["total_ips"],
+        "malicious_ips": ip_stats["malicious_ips"],
+        "suspicious_ips": ip_stats["suspicious_ips"],
+        "signals_24h": signals_24h,
     }
