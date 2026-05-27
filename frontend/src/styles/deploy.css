@@ -2319,15 +2319,16 @@ body.has-top-strip header {
 }
 
 .resource-mini-card h3 {
-  margin: 36px 0;
-  font-size: clamp(26px, 2.2vw, 40px);
-  line-height: 1.02;
-  letter-spacing: -0.05em;
+  margin: 28px 0 22px;
+  font-size: clamp(20px, 1.5vw, 28px);
+  line-height: 1.12;
+  letter-spacing: -0.045em;
+  max-width: 92%;
 }
 
 .resource-mini-footer {
-  color: #b7beb5;
-  font-size: 16px;
+  color: #8f968d;
+  font-size: 14px;
 }
 
 @media (max-width: 980px) {
