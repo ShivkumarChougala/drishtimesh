@@ -14,7 +14,7 @@ export default function Navbar({ onDeploy }) {
         </Link>
 
         <div className="links">
-          <a href="#">Why DrishtiMesh</a>
+          <Link to="/why-drishtimesh">Why DrishtiMesh</Link>
 
           <a href="#">
             Product <span>⌄</span>
