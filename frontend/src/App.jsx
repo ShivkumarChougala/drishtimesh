@@ -6,6 +6,7 @@ import WhyDrishtiMeshPage from "./pages/WhyDrishtiMeshPage";
 import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
 import DashboardPage from "./pages/DashboardPage";
+import ScrollToTop from "./components/ScrollToTop";
 import BlogPage from "./pages/BlogPage";
 import BlogPostPage from "./pages/BlogPostPage";
 
@@ -17,6 +18,7 @@ import "./styles/blog.css";
 export default function App() {
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <Routes>
         <Route path="/" element={<DeployPage />} />
         <Route path="/lookup" element={<LookupPage />} />
