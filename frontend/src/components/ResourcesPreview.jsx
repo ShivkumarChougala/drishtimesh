@@ -2,46 +2,36 @@ import { Link } from "react-router-dom";
 import { blogPosts } from "../data/blogPosts";
 
 export default function ResourcesPreview() {
-  const featuredPost = blogPosts[0];
+  const latestPosts = blogPosts.slice(0, 3);
 
   return (
     <section className="resources-preview" id="resources">
-      <div className="resources-header">
-        <div>
-          <span className="eyebrow">Resources</span>
-          <h2>Research, intelligence, and community learnings.</h2>
-        </div>
+      <div className="resources-preview-bg"></div>
 
-        <Link to="/blog" className="resources-link">
-          View all articles →
-        </Link>
+      <div className="resources-header centered">
+        <div>
+          <h2>Resources</h2>
+        </div>
       </div>
 
-      <div className="resources-grid">
-        <Link
-          to={`/blog/${featuredPost.slug}`}
-          className="resource-feature-card"
-        >
-          <div className="resource-visual">
-            <span>{featuredPost.coverLabel}</span>
-          </div>
+      <div className="resources-cards-grid">
+        {latestPosts.map((post) => (
+          <Link
+            key={post.slug}
+            to={`/blog/${post.slug}`}
+            className="resource-mini-card"
+          >
+            <span className="resource-mini-badge">
+              {post.category}
+            </span>
 
-          <div className="resource-content">
-            <div className="resource-meta">
-              <span>{featuredPost.category}</span>
-              <span>{featuredPost.readTime}</span>
+            <h3>{post.title}</h3>
+
+            <div className="resource-mini-footer">
+              <span>Read more</span>
             </div>
-
-            <h3>{featuredPost.title}</h3>
-
-            <p>{featuredPost.excerpt}</p>
-
-            <div className="resource-footer">
-              <span>{featuredPost.date}</span>
-              <span>Read article →</span>
-            </div>
-          </div>
-        </Link>
+          </Link>
+        ))}
       </div>
     </section>
   );
