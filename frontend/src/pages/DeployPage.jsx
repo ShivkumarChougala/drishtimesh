@@ -30,8 +30,9 @@ export default function DeployPage() {
         <Hero onDeploy={handleDeploy} />
         <MeshStats />
 	          <RecentActivity />
-        <ResourcesPreview />
-	  <TransparencySection />
+       	  <TransparencySection />
+	  <ResourcesPreview />
+
         <LookupCTA onDeploy={handleDeploy} />
       </main>
 
