@@ -4,7 +4,10 @@ import { getDashboardLiveEvents } from "../../api/dashboard";
 function formatTime(value) {
   if (!value) return "unknown";
   try {
-    return new Date(value).toLocaleString();
+    return new Date(value).toLocaleTimeString(undefined, {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
   } catch {
     return value;
   }
@@ -14,7 +17,7 @@ function normalizeVerdict(value) {
   return String(value || "unknown").toLowerCase().replaceAll("_", "-");
 }
 
-export default function ThreatFeed() {
+export default function ThreatFeed({ hours = 24 }) {
   const [events, setEvents] = useState([]);
   const [status, setStatus] = useState("loading");
   const [lastUpdated, setLastUpdated] = useState(null);
@@ -23,7 +26,7 @@ export default function ThreatFeed() {
     try {
       if (!silent) setStatus("loading");
 
-      const data = await getDashboardLiveEvents(12);
+      const data = await getDashboardLiveEvents(20, hours);
       setEvents(data.results || []);
       setLastUpdated(new Date());
       setStatus("ready");
@@ -40,15 +43,16 @@ export default function ThreatFeed() {
     }, 10000);
 
     return () => clearInterval(timer);
-  }, []);
+  }, [hours]);
 
   return (
     <section className="dash-panel threat-feed-panel">
       <div className="feed-head">
         <div>
+          <span className="timeline-kicker">Signals</span>
           <h2>Live Threat Feed</h2>
           <p className="dash-muted">
-            Latest signals from your deployed sensors.
+            Latest observed activity from your deployed sensors.
           </p>
           {lastUpdated && (
             <small className="feed-updated">
@@ -73,29 +77,43 @@ export default function ThreatFeed() {
       )}
 
       {status === "ready" && events.length > 0 && (
-        <div className="threat-list">
-          {events.map((event, index) => {
-            const verdictClass = normalizeVerdict(event.verdict || event.severity);
+        <div className="threat-table-wrap">
+          <table className="threat-table">
+            <thead>
+              <tr>
+                <th>Time</th>
+                <th>Source IP</th>
+                <th>Signal</th>
+                <th>Sensor</th>
+                <th>Verdict</th>
+                <th>Score</th>
+              </tr>
+            </thead>
 
-            return (
-              <div className="threat-item" key={`${event.src_ip}-${event.observed_at}-${index}`}>
-                <div>
-                  <strong>{event.src_ip}</strong>
-                  <p>
-                    {event.signal_type} · {event.sensor}
-                  </p>
-                  <small>{formatTime(event.observed_at)}</small>
-                </div>
+            <tbody>
+              {events.map((event, index) => {
+                const verdict = event.verdict || event.severity || "unknown";
+                const verdictClass = normalizeVerdict(verdict);
 
-                <div className="threat-right">
-                  <span className={`risk-badge ${verdictClass}`}>
-                    {event.verdict || event.severity || "unknown"}
-                  </span>
-                  <small>score {event.score ?? event.confidence ?? 0}</small>
-                </div>
-              </div>
-            );
-          })}
+                return (
+                  <tr key={`${event.src_ip}-${event.observed_at}-${index}`}>
+                    <td>{formatTime(event.observed_at)}</td>
+                    <td>
+                      <strong className="threat-ip">{event.src_ip || "unknown"}</strong>
+                    </td>
+                    <td>{event.signal_type || "unknown"}</td>
+                    <td>{event.sensor || "sensor"}</td>
+                    <td>
+                      <span className={`risk-badge ${verdictClass}`}>
+                        {verdict}
+                      </span>
+                    </td>
+                    <td>{event.score ?? event.confidence ?? 0}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
       )}
     </section>

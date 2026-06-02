@@ -179,6 +179,7 @@ def dashboard_timeline(
 @router.get("/live-events")
 def dashboard_live_events(
     limit: int = 20,
+    hours: int = 24,
     current_user=Depends(get_current_user)
 ):
     conn = get_db_connection()
@@ -202,10 +203,11 @@ def dashboard_live_events(
         LEFT JOIN ip_reputation r
             ON s.src_ip = r.ip
         WHERE n.user_id = %s
+          AND s.observed_at >= NOW() - (%s || ' hours')::interval
         ORDER BY s.observed_at DESC
         LIMIT %s;
         """,
-        (current_user["id"], limit)
+        (current_user["id"], hours, limit)
     )
 
     rows = cur.fetchall()
@@ -214,6 +216,7 @@ def dashboard_live_events(
     conn.close()
 
     return {
+        "hours": hours,
         "count": len(rows),
         "results": rows
     }

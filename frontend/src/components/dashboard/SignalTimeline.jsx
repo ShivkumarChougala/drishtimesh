@@ -1,12 +1,6 @@
 import { useEffect, useState } from "react";
 import { getDashboardTimeline } from "../../api/dashboard";
 
-const ranges = [
-  { label: "6h", value: 6 },
-  { label: "12h", value: 12 },
-  { label: "24h", value: 24 },
-  { label: "7d", value: 168 },
-];
 
 function formatBucket(value, hours) {
   const date = new Date(value);
@@ -19,9 +13,8 @@ function formatBucket(value, hours) {
   return date.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
 }
 
-export default function SignalTimeline() {
+export default function SignalTimeline({ hours = 24 }) {
   const [timeline, setTimeline] = useState([]);
-  const [hours, setHours] = useState(24);
   const [status, setStatus] = useState("loading");
 
   useEffect(() => {
@@ -59,18 +52,6 @@ export default function SignalTimeline() {
           <div className="timeline-summary">
             <strong>{totalSignals}</strong>
             <span>total signals</span>
-          </div>
-
-          <div className="range-tabs">
-            {ranges.map((range) => (
-              <button
-                key={range.value}
-                className={hours === range.value ? "active" : ""}
-                onClick={() => setHours(range.value)}
-              >
-                {range.label}
-              </button>
-            ))}
           </div>
         </div>
       </div>

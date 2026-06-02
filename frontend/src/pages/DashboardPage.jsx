@@ -7,6 +7,7 @@ import ThreatFeed from "../components/dashboard/ThreatFeed";
 import SignalTimeline from "../components/dashboard/SignalTimeline";
 import SensorHealth from "../components/dashboard/SensorHealth";
 import DeployWorkspace from "../components/dashboard/DeployWorkspace";
+import DashboardCommandBar from "../components/dashboard/DashboardCommandBar";
 
 export default function DashboardPage() {
   const navigate = useNavigate();
@@ -14,16 +15,15 @@ export default function DashboardPage() {
   const [summary, setSummary] = useState(null);
   const [status, setStatus] = useState("loading");
   const [refreshKey, setRefreshKey] = useState(0);
+  const [hoursFilter, setHoursFilter] = useState(24);
 
   useEffect(() => {
     async function loadDashboard() {
       try {
         const me = await getMe();
         setUser(me);
-
         const summaryData = await getDashboardSummary();
         setSummary(summaryData);
-
         setStatus("ready");
       } catch {
         logout();
@@ -48,35 +48,35 @@ export default function DashboardPage() {
   }
 
   return (
-    <main className="dashboard-shell">
-      <aside className="dash-sidebar">
+    <main className="dashboard-shell dashboard-shell-topnav">
+      <header className="dashboard-topnav">
         <div className="dash-brand">
           <div className="dash-logo"></div>
           <strong>DrishtiMesh</strong>
         </div>
 
-        <nav className="dash-nav">
+        <nav className="dash-nav-horizontal">
           <span className="active">Overview</span>
+          <span>Signals</span>
           <span>Sensors</span>
-          <span>Threat Signals</span>
-          <span>IP Reputation</span>
-          <span>Deployments</span>
-          <span>API Keys</span>
+          <span>Deploy</span>
+          <span>Reputation</span>
         </nav>
-      </aside>
+
+        <div className="dash-actions">
+          <span>{user?.email}</span>
+          <button onClick={handleLogout}>Logout</button>
+        </div>
+      </header>
 
       <section className="dashboard-main">
         <header className="dash-topbar">
           <div>
+            <span className="dash-eyebrow">Overview</span>
             <h1>Threat Mesh Command Center</h1>
             <p>
               Live visibility across sensors, attack signals, IP reputation and mesh health.
             </p>
-          </div>
-
-          <div className="dash-actions">
-            <span>{user?.email}</span>
-            <button onClick={handleLogout}>Logout</button>
           </div>
         </header>
 
@@ -85,16 +85,20 @@ export default function DashboardPage() {
         {status === "ready" && (
           <>
             <KpiCards summary={summary} />
+            <p className="dash-impact-line">Every shared signal strengthens community reputation intelligence.</p>
+            <DashboardCommandBar hours={hoursFilter} onHoursChange={setHoursFilter} />
 
-            <section className="dash-content-grid">
-              <SignalTimeline />
-
-              <ThreatFeed />
+            <section className="dash-wide-row">
+              <SignalTimeline hours={hoursFilter} />
             </section>
 
-            <section className="dash-content-grid">
+            <section className="dash-two-column">
+              <ThreatFeed hours={hoursFilter} />
               <SensorHealth refreshKey={refreshKey} onDeleted={refreshDashboard} />
+            </section>
 
+
+            <section className="dash-wide-row">
               <DeployWorkspace onCreated={refreshDashboard} />
             </section>
           </>

@@ -653,3 +653,444 @@
     width: 28px;
   }
 }
+
+/* Dashboard v2 layout */
+.dash-eyebrow {
+  display: inline-block;
+  margin-bottom: 8px;
+  color: #37f8b5;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.dash-wide-row {
+  margin-top: 22px;
+}
+
+.dash-two-column {
+  display: grid;
+  grid-template-columns: 1.35fr 1fr;
+  gap: 22px;
+  margin-top: 22px;
+}
+
+.dash-two-column > *,
+.dash-wide-row > * {
+  min-width: 0;
+}
+
+.dash-two-column .threat-feed-panel .threat-list {
+  max-height: 520px;
+}
+
+.dash-two-column .sensor-list {
+  max-height: 520px;
+  overflow: auto;
+}
+
+@media (max-width: 1100px) {
+  .dash-two-column {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Threat feed table */
+.threat-table-wrap {
+  margin-top: 18px;
+  max-height: 520px;
+  overflow: auto;
+  border: 1px solid rgba(255,255,255,.07);
+  border-radius: 18px;
+  background: rgba(0,0,0,.16);
+}
+
+.threat-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 720px;
+}
+
+.threat-table th,
+.threat-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(255,255,255,.07);
+  text-align: left;
+  vertical-align: middle;
+  font-size: 13px;
+}
+
+.threat-table th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: #071117;
+  color: #708882;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.threat-table td {
+  color: #9fb6b0;
+}
+
+.threat-table tr:hover td {
+  background: rgba(55,248,181,.035);
+}
+
+.threat-table tr:last-child td {
+  border-bottom: 0;
+}
+
+.threat-ip {
+  color: #e8f7f1;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.threat-table .risk-badge {
+  white-space: nowrap;
+}
+
+@media (max-width: 800px) {
+  .threat-table-wrap {
+    border-radius: 14px;
+  }
+}
+
+/* Dashboard command/search bar */
+.dash-command-bar {
+  display: grid;
+  grid-template-columns: 1fr 170px 170px 120px;
+  gap: 12px;
+  margin: 18px 0 22px;
+}
+
+.dash-search-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  padding: 0 15px;
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 18px;
+  background: rgba(0,0,0,.22);
+}
+
+.dash-search-box span {
+  color: #37f8b5;
+  font-size: 20px;
+}
+
+.dash-search-box input {
+  width: 100%;
+  height: 48px;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #e8f7f1;
+  font-weight: 700;
+}
+
+.dash-search-box input::placeholder {
+  color: #708882;
+}
+
+.dash-command-bar select,
+.dash-command-bar button {
+  height: 50px;
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 18px;
+  background: rgba(0,0,0,.22);
+  color: #e8f7f1;
+  padding: 0 14px;
+  font-weight: 900;
+  outline: 0;
+}
+
+.dash-command-bar select option {
+  background: #071117;
+  color: #e8f7f1;
+}
+
+.dash-command-bar button {
+  border-color: rgba(55,248,181,.28);
+  background: rgba(55,248,181,.09);
+  color: #37f8b5;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+
+.dash-command-bar button:hover {
+  background: rgba(55,248,181,.14);
+}
+
+@media (max-width: 980px) {
+  .dash-command-bar {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .dash-search-box {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 620px) {
+  .dash-command-bar {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Threat intelligence summary cards */
+.intel-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+  margin-top: 22px;
+}
+
+.intel-card {
+  min-width: 0;
+  padding: 20px;
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 22px;
+  background: linear-gradient(180deg, rgba(12,27,35,.96), rgba(6,16,22,.96));
+  box-shadow: 0 24px 70px rgba(0,0,0,.28);
+}
+
+.intel-card h3 {
+  margin: 6px 0 18px;
+  color: #e8f7f1;
+  font-size: 20px;
+  letter-spacing: -0.03em;
+}
+
+.intel-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(255,255,255,.07);
+}
+
+.intel-row:last-child {
+  border-bottom: 0;
+}
+
+.intel-row strong {
+  min-width: 0;
+  color: #e8f7f1;
+  font-size: 13px;
+  word-break: break-word;
+}
+
+.intel-row span {
+  flex: 0 0 auto;
+  color: #37f8b5;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+@media (max-width: 1100px) {
+  .intel-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Dashboard top navigation layout */
+.dashboard-shell-topnav {
+  display: block;
+  min-height: 100vh;
+}
+
+.dashboard-shell-topnav .dashboard-main {
+  max-width: 1560px;
+  margin: 0 auto;
+  padding: 24px 28px 36px;
+}
+
+.dashboard-topnav {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  height: 72px;
+  display: flex;
+  align-items: center;
+  gap: 30px;
+  padding: 0 28px;
+  background: rgba(5, 11, 15, 0.94);
+  border-bottom: 1px solid rgba(255,255,255,.08);
+  backdrop-filter: blur(16px);
+}
+
+.dashboard-topnav .dash-brand {
+  margin: 0;
+  flex: 0 0 auto;
+}
+
+.dash-nav-horizontal {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dash-nav-horizontal span {
+  padding: 11px 14px;
+  border-radius: 14px;
+  color: #8ea6a0;
+  font-weight: 800;
+  cursor: default;
+}
+
+.dash-nav-horizontal span.active {
+  background: rgba(55,248,181,.12);
+  color: #37f8b5;
+}
+
+.dashboard-topnav .dash-actions {
+  margin-left: auto;
+}
+
+.dashboard-shell-topnav .dash-sidebar {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .dashboard-topnav {
+    height: auto;
+    padding: 16px;
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .dash-nav-horizontal {
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  .dashboard-topnav .dash-actions {
+    margin-left: 0;
+  }
+
+  .dashboard-shell-topnav .dashboard-main {
+    padding: 18px;
+  }
+}
+
+/* Compact empty states inside timeline */
+.enterprise-timeline .empty-state {
+  margin-top: 20px;
+  padding: 22px 24px;
+  min-height: auto;
+}
+
+.enterprise-timeline .empty-state strong {
+  display: block;
+  margin-bottom: 8px;
+  color: #e8f7f1;
+}
+
+.enterprise-timeline .empty-state p {
+  margin: 0;
+}
+
+/* Community impact card */
+.community-impact {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 22px;
+  align-items: center;
+  margin: 18px 0 20px;
+  padding: 24px;
+  border: 1px solid rgba(55,248,181,.14);
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at 15% 20%, rgba(55,248,181,.12), transparent 30%),
+    linear-gradient(180deg, rgba(12,27,35,.96), rgba(6,16,22,.96));
+  box-shadow: 0 24px 70px rgba(0,0,0,.28);
+}
+
+.community-impact h2 {
+  margin: 8px 0 10px;
+  color: #e8f7f1;
+  font-size: clamp(28px, 3vw, 44px);
+  line-height: .95;
+  letter-spacing: -0.055em;
+}
+
+.community-impact p {
+  max-width: 680px;
+  margin: 0;
+  color: #8ea6a0;
+  line-height: 1.7;
+}
+
+.impact-metrics {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.impact-metric {
+  padding: 16px;
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 18px;
+  background: rgba(0,0,0,.18);
+}
+
+.impact-metric strong {
+  display: block;
+  color: #37f8b5;
+  font-size: 28px;
+  line-height: 1;
+}
+
+.impact-metric span {
+  display: block;
+  margin-top: 8px;
+  color: #8ea6a0;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+
+@media (max-width: 980px) {
+  .community-impact {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 620px) {
+  .impact-metrics {
+    grid-template-columns: 1fr;
+  }
+}
+
+.dash-impact-line {
+  margin: -4px 0 18px;
+  color: #8ea6a0;
+  font-size: 15px;
+}
+
+.dash-impact-line::before {
+  content: "Community Impact · ";
+  color: #37f8b5;
+  font-weight: 900;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  font-size: 12px;
+}
+
+.enterprise-timeline .timeline-summary {
+  display: none;
+}
+
+.enterprise-timeline .timeline-actions {
+  display: none;
+}
