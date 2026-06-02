@@ -262,3 +262,152 @@
     flex-direction: column;
   }
 }
+
+.auth-gate-page {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 32px;
+  background:
+    radial-gradient(circle at 18% 12%, rgba(120,214,163,0.07), transparent 28%),
+    radial-gradient(circle at 82% 18%, rgba(216,180,106,0.05), transparent 24%),
+    #0d0f0e;
+  color: #f4f1e8;
+}
+
+.auth-gate-card {
+  width: min(680px, 100%);
+}
+
+.auth-gate-card h1 {
+  margin: 0 0 18px;
+  font-size: clamp(42px, 6vw, 72px);
+  line-height: 0.95;
+  letter-spacing: -0.065em;
+  color: #f4f1e8;
+}
+
+.auth-gate-card p {
+  max-width: 640px;
+  margin: 0 0 34px;
+  color: #b2b7af;
+  font-size: 18px;
+  line-height: 1.8;
+}
+
+.auth-gate-actions {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.auth-gate-primary,
+.auth-gate-secondary {
+  min-width: 190px;
+  padding: 16px 24px;
+  text-align: center;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  transition: 0.2s ease;
+}
+
+.auth-gate-primary {
+  background: #f4f1e8;
+  border: 1px solid #f4f1e8;
+  color: #0d0f0e;
+}
+
+.auth-gate-primary:hover {
+  background: #ffffff;
+}
+
+.auth-gate-secondary {
+  background: transparent;
+  border: 1px solid #78d6a3;
+  color: #78d6a3;
+}
+
+.auth-gate-secondary:hover {
+  background: rgba(120,214,163,0.08);
+}
+
+@media (max-width: 620px) {
+  .auth-gate-page {
+    place-items: start;
+    padding-top: 120px;
+  }
+
+  .auth-gate-actions {
+    flex-direction: column;
+  }
+
+  .auth-gate-primary,
+  .auth-gate-secondary {
+    width: 100%;
+  }
+}
+
+
+
+/* Compact auth gate layout */
+.auth-gate-page {
+  min-height: calc(100vh - 120px);
+  place-items: start center;
+  padding: 170px 32px 70px;
+}
+
+.auth-gate-card {
+  width: min(760px, 100%);
+  margin: 0 auto;
+}
+
+.auth-gate-card h1 {
+  margin-bottom: 18px;
+}
+
+.auth-gate-card p {
+  margin-bottom: 28px;
+}
+
+@media (max-width: 620px) {
+  .auth-gate-page {
+    min-height: auto;
+    padding: 90px 20px 56px;
+  }
+}
+
+/* Final auth gate spacing */
+.auth-gate-page {
+  min-height: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 96px 28px 96px;
+  background:
+    radial-gradient(circle at 18% 12%, rgba(120,214,163,0.07), transparent 28%),
+    radial-gradient(circle at 82% 18%, rgba(216,180,106,0.05), transparent 24%),
+    #0d0f0e;
+}
+
+.auth-gate-card {
+  width: min(720px, 100%);
+  margin: 0 auto;
+}
+
+.auth-gate-card h1 {
+  font-size: clamp(44px, 6vw, 76px);
+}
+
+.auth-gate-card p {
+  max-width: 650px;
+  margin-bottom: 30px;
+}
+
+@media (max-width: 620px) {
+  .auth-gate-page {
+    padding: 72px 20px;
+  }
+}

@@ -8,17 +8,13 @@ import LookupCTA from "../components/LookupCTA";
 import RecentActivity from "../components/RecentActivity";
 import ResourcesPreview from "../components/ResourcesPreview";
 import Footer from "../components/Footer";
-import { isLoggedIn } from "../api/auth";
+
 
 export default function DeployPage() {
   const navigate = useNavigate();
 
   function handleDeploy() {
-    if (isLoggedIn()) {
-      navigate("/dashboard");
-    } else {
-      navigate("/login");
-    }
+    navigate("/login");
   }
 
   return (

@@ -50,7 +50,7 @@ export default function SignupPage() {
         </form>
 
         <p className="auth-switch">
-          Already have account? <Link to="/login">Login</Link>
+          Already have account? <Link to="/login/form">Login</Link>
         </p>
       </section>
     </main>

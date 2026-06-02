@@ -4,6 +4,7 @@ import DeployPage from "./pages/DeployPage";
 import LookupPage from "./pages/LookupPage";
 import WhyDrishtiMeshPage from "./pages/WhyDrishtiMeshPage";
 import LoginPage from "./pages/LoginPage";
+import AuthGatePage from "./pages/AuthGatePage";
 import SignupPage from "./pages/SignupPage";
 import DashboardPage from "./pages/DashboardPage";
 import ScrollToTop from "./components/ScrollToTop";
@@ -25,7 +26,8 @@ export default function App() {
         <Route path="/why-drishtimesh" element={<WhyDrishtiMeshPage />} />
         <Route path="/blog" element={<BlogPage />} />
         <Route path="/blog/:slug" element={<BlogPostPage />} />
-        <Route path="/login" element={<LoginPage />} />
+        <Route path="/login" element={<AuthGatePage />} />
+        <Route path="/login/form" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/dashboard" element={<DashboardPage />} />
       </Routes>
