@@ -1,9 +1,18 @@
-export default function DashboardCommandBar({ hours, onHoursChange }) {
+export default function DashboardCommandBar({
+  hours,
+  onHoursChange,
+  searchQuery,
+  onSearchChange,
+}) {
   return (
     <section className="dash-command-bar">
       <div className="dash-search-box">
         <span>⌕</span>
-        <input placeholder="Search IP, sensor, signal type..." />
+        <input
+          value={searchQuery}
+          onChange={(e) => onSearchChange(e.target.value)}
+          placeholder="Search IP, sensor, signal type..."
+        />
       </div>
 
       <select
@@ -22,8 +31,6 @@ export default function DashboardCommandBar({ hours, onHoursChange }) {
         <option value="suspicious">Suspicious</option>
         <option value="unknown">Unknown</option>
       </select>
-
-      <button type="button">Search</button>
     </section>
   );
 }
