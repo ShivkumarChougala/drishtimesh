@@ -1208,3 +1208,11 @@
   grid-template-columns: 1fr 190px 190px;
 }
 
+
+.threat-ip-button {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+}
