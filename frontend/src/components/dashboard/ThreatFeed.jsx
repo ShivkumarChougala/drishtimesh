@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import { getDashboardLiveEvents } from "../../api/dashboard";
 import DashboardCommandBar from "./DashboardCommandBar";
 
@@ -133,12 +132,18 @@ export default function ThreatFeed({ hours = 24, onHoursChange, searchQuery = ""
                     <td>{formatTime(event.observed_at)}</td>
                     <td>
                       {event.src_ip ? (
-                        <Link
-                          className="threat-ip threat-ip-link"
-                          to={`/lookup?ip=${encodeURIComponent(event.src_ip)}`}
+                        <button
+                          type="button"
+                          className="threat-ip threat-ip-link threat-ip-button"
+                          onClick={() => {
+                            window.open(
+                              `/lookup?ip=${encodeURIComponent(event.src_ip)}`,
+                              "_blank"
+                            );
+                          }}
                         >
                           {event.src_ip}
-                        </Link>
+                        </button>
                       ) : (
                         <strong className="threat-ip">unknown</strong>
                       )}
