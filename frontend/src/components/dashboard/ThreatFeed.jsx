@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { getDashboardLiveEvents } from "../../api/dashboard";
+import DashboardCommandBar from "./DashboardCommandBar";
 
 function formatTime(value) {
   if (!value) return "unknown";
@@ -17,7 +19,7 @@ function normalizeVerdict(value) {
   return String(value || "unknown").toLowerCase().replaceAll("_", "-");
 }
 
-export default function ThreatFeed({ hours = 24 }) {
+export default function ThreatFeed({ hours = 24, onHoursChange, searchQuery = "", onSearchChange }) {
   const [events, setEvents] = useState([]);
   const [status, setStatus] = useState("loading");
   const [lastUpdated, setLastUpdated] = useState(null);
@@ -45,12 +47,31 @@ export default function ThreatFeed({ hours = 24 }) {
     return () => clearInterval(timer);
   }, [hours]);
 
+  const filteredEvents = events.filter((event) => {
+    const query = searchQuery.trim().toLowerCase();
+    if (!query) return true;
+
+    return [
+      event.src_ip,
+      event.signal_type,
+      event.sensor,
+      event.verdict,
+      event.severity,
+      event.eventid,
+    ]
+      .filter(Boolean)
+      .some((value) => String(value).toLowerCase().includes(query));
+  });
+
   return (
     <section className="dash-panel threat-feed-panel">
       <div className="feed-head">
         <div>
           <span className="timeline-kicker">Signals</span>
-          <h2>Live Threat Feed</h2>
+          <div className="feed-title-row">
+            <h2>Threat Feed</h2>
+            <span className="live-pill">Live</span>
+          </div>
           <p className="dash-muted">
             Latest observed activity from your deployed sensors.
           </p>
@@ -60,9 +81,14 @@ export default function ThreatFeed({ hours = 24 }) {
             </small>
           )}
         </div>
-
-        <span className="live-pill">Live</span>
       </div>
+
+      <DashboardCommandBar
+        hours={hours}
+        onHoursChange={onHoursChange}
+        searchQuery={searchQuery}
+        onSearchChange={onSearchChange}
+      />
 
       {status === "loading" && <p className="dash-muted">Loading threat feed...</p>}
       {status === "error" && <p className="dash-muted">Failed to load threat feed.</p>}
@@ -76,7 +102,14 @@ export default function ThreatFeed({ hours = 24 }) {
         </div>
       )}
 
-      {status === "ready" && events.length > 0 && (
+      {status === "ready" && events.length > 0 && filteredEvents.length === 0 && (
+        <div className="empty-state">
+          <strong>No matching signals</strong>
+          <p className="dash-muted">Try another IP, sensor, or signal type.</p>
+        </div>
+      )}
+
+      {status === "ready" && filteredEvents.length > 0 && (
         <div className="threat-table-wrap">
           <table className="threat-table">
             <thead>
@@ -91,7 +124,7 @@ export default function ThreatFeed({ hours = 24 }) {
             </thead>
 
             <tbody>
-              {events.map((event, index) => {
+              {filteredEvents.map((event, index) => {
                 const verdict = event.verdict || event.severity || "unknown";
                 const verdictClass = normalizeVerdict(verdict);
 
@@ -99,7 +132,16 @@ export default function ThreatFeed({ hours = 24 }) {
                   <tr key={`${event.src_ip}-${event.observed_at}-${index}`}>
                     <td>{formatTime(event.observed_at)}</td>
                     <td>
-                      <strong className="threat-ip">{event.src_ip || "unknown"}</strong>
+                      {event.src_ip ? (
+                        <Link
+                          className="threat-ip threat-ip-link"
+                          to={`/lookup?ip=${encodeURIComponent(event.src_ip)}`}
+                        >
+                          {event.src_ip}
+                        </Link>
+                      ) : (
+                        <strong className="threat-ip">unknown</strong>
+                      )}
                     </td>
                     <td>{event.signal_type || "unknown"}</td>
                     <td>{event.sensor || "sensor"}</td>

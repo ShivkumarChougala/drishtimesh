@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import AnnouncementBar from "../components/AnnouncementBar";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
@@ -11,6 +11,47 @@ export default function LookupPage() {
   const [ip, setIp] = useState("");
   const [result, setResult] = useState(null);
   const [status, setStatus] = useState("idle");
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const urlIp = params.get("ip")?.trim();
+
+    if (!urlIp) return;
+
+    setIp(urlIp);
+
+    async function runLookup() {
+      try {
+        setStatus("loading");
+        setResult(null);
+
+        const data = await lookupIp(urlIp);
+        setResult(data);
+        setStatus("success");
+      } catch {
+        setStatus("success");
+        setResult({
+          ip: urlIp,
+          found: false,
+          verdict: "unknown",
+          score: 0,
+          confidence: "none",
+          total_signals: 0,
+          observed_by_nodes: 0,
+          first_seen: null,
+          last_seen: null,
+          signals: [],
+          community_summary: {
+            total_observations: 0,
+            community_nodes: 0,
+          },
+          context: {},
+        });
+      }
+    }
+
+    runLookup();
+  }, []);
 
   async function handleSubmit(event) {
     event.preventDefault();
