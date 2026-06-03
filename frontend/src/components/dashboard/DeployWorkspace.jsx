@@ -88,9 +88,9 @@ export default function DeployWorkspace({ onCreated }) {
 
   return (
     <section className="dash-panel deploy-workspace">
-      <h2>Deployment Workspace</h2>
+      <h2>Deploy Sensor</h2>
       <p className="dash-muted">
-        Create a named sensor and connect your VPS to DrishtiMesh.
+        Register a sensor and connect your VPS to DrishtiMesh.
       </p>
 
       {!sensor && (

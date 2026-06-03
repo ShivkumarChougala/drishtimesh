@@ -4,10 +4,8 @@ import { getMe, logout } from "../api/auth";
 import { getDashboardSummary } from "../api/dashboard";
 import KpiCards from "../components/dashboard/KpiCards";
 import ThreatFeed from "../components/dashboard/ThreatFeed";
-import SignalTimeline from "../components/dashboard/SignalTimeline";
 import SensorHealth from "../components/dashboard/SensorHealth";
 import DeployWorkspace from "../components/dashboard/DeployWorkspace";
-import DashboardCommandBar from "../components/dashboard/DashboardCommandBar";
 
 export default function DashboardPage() {
   const navigate = useNavigate();
@@ -16,6 +14,7 @@ export default function DashboardPage() {
   const [status, setStatus] = useState("loading");
   const [refreshKey, setRefreshKey] = useState(0);
   const [hoursFilter, setHoursFilter] = useState(24);
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     async function loadDashboard() {
@@ -72,7 +71,6 @@ export default function DashboardPage() {
       <section className="dashboard-main">
         <header className="dash-topbar">
           <div>
-            <span className="dash-eyebrow">Overview</span>
             <h1>Threat Mesh Command Center</h1>
             <p>
               Live visibility across sensors, attack signals, IP reputation and mesh health.
@@ -85,20 +83,12 @@ export default function DashboardPage() {
         {status === "ready" && (
           <>
             <KpiCards summary={summary} />
-            <p className="dash-impact-line">Every shared signal strengthens community reputation intelligence.</p>
-            <DashboardCommandBar hours={hoursFilter} onHoursChange={setHoursFilter} />
-
             <section className="dash-wide-row">
-              <SignalTimeline hours={hoursFilter} />
+              <ThreatFeed hours={hoursFilter} onHoursChange={setHoursFilter} searchQuery={searchQuery} onSearchChange={setSearchQuery} />
             </section>
 
-            <section className="dash-two-column">
-              <ThreatFeed hours={hoursFilter} />
+            <section className="dash-two-column dashboard-lower-grid">
               <SensorHealth refreshKey={refreshKey} onDeleted={refreshDashboard} />
-            </section>
-
-
-            <section className="dash-wide-row">
               <DeployWorkspace onCreated={refreshDashboard} />
             </section>
           </>

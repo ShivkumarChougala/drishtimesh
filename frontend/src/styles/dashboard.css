@@ -1072,20 +1072,6 @@
   }
 }
 
-.dash-impact-line {
-  margin: -4px 0 18px;
-  color: #8ea6a0;
-  font-size: 15px;
-}
-
-.dash-impact-line::before {
-  content: "Community Impact · ";
-  color: #37f8b5;
-  font-weight: 900;
-  letter-spacing: .08em;
-  text-transform: uppercase;
-  font-size: 12px;
-}
 
 .enterprise-timeline .timeline-summary {
   display: none;
@@ -1094,3 +1080,131 @@
 .enterprise-timeline .timeline-actions {
   display: none;
 }
+
+/* Balanced dashboard panel headings */
+.threat-feed-panel h2,
+.dash-two-column .dash-panel h2 {
+  font-size: clamp(30px, 3vw, 42px);
+  line-height: 1;
+  letter-spacing: -0.045em;
+}
+
+.dash-two-column .dash-panel > p,
+.threat-feed-panel .dash-muted {
+  font-size: 15px;
+}
+
+/* Deploy workspace heading */
+.deploy-workspace-panel h2,
+.deploy-panel h2 {
+  font-size: clamp(30px, 3vw, 42px);
+  line-height: 1;
+  letter-spacing: -0.045em;
+}
+
+/* Compact dashboard header */
+.dash-topbar {
+  align-items: flex-start;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(255,255,255,.07);
+}
+
+.dash-topbar h1 {
+  margin: 0 0 8px;
+  line-height: 1.05;
+}
+
+.dash-topbar p {
+  margin: 0;
+}
+
+.dash-kpis {
+  margin: 14px 0 18px;
+}
+
+/* Compact KPI cards */
+.dash-kpi-card {
+  border-radius: 18px;
+  padding: 16px 18px;
+}
+
+.dash-kpi-card span {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.dash-kpi-card strong {
+  font-size: 28px;
+  margin: 8px 0 6px;
+}
+
+.dash-kpi-card small {
+  font-size: 12px;
+}
+
+/* Give threat feed more room than sensor health */
+.dash-two-column {
+  grid-template-columns: 1.8fr .8fr;
+}
+
+.threat-ip-link {
+  text-decoration: none;
+}
+
+.threat-ip-link:hover {
+  color: #37f8b5;
+  text-decoration: underline;
+}
+
+/* Dashboard layout: feed first, actions below */
+.dashboard-lower-grid {
+  grid-template-columns: .8fr 1.2fr;
+}
+
+.dash-wide-row .threat-feed-panel .threat-table-wrap {
+  max-height: 560px;
+}
+
+@media (max-width: 1100px) {
+  .dashboard-lower-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Compact full-width threat feed */
+.dash-wide-row .threat-feed-panel {
+  padding-top: 28px;
+}
+
+.dash-wide-row .threat-feed-panel h2 {
+  font-size: clamp(34px, 4vw, 56px);
+}
+
+/* Command bar inside threat feed */
+.threat-feed-panel .dash-command-bar {
+  margin: 22px 0 18px;
+  grid-template-columns: 1fr 190px 190px 130px;
+}
+
+.threat-feed-panel .dash-command-bar select,
+.threat-feed-panel .dash-command-bar button,
+.threat-feed-panel .dash-search-box {
+  border-radius: 14px;
+}
+
+.feed-title-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.dash-wide-row .threat-feed-panel h2 {
+  font-size: clamp(34px, 4vw, 48px);
+}
+
+.threat-feed-panel .dash-command-bar {
+  grid-template-columns: 1fr 190px 190px;
+}
+
