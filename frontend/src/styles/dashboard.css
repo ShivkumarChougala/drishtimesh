@@ -1216,3 +1216,203 @@
   cursor: pointer;
   font: inherit;
 }
+
+/* Dashboard user profile */
+.dash-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.dash-user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.dash-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(55,248,181,.12);
+  border: 1px solid rgba(55,248,181,.25);
+  color: #37f8b5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  font-size: 14px;
+}
+
+.dash-user-meta {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.dash-user-meta strong {
+  color: #f4f1e8;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.dash-user-meta span {
+  color: #8ea6a0;
+  font-size: 12px;
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Account dropdown */
+.dash-account {
+  position: relative;
+}
+
+.dash-account-trigger {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid rgba(255,255,255,.08);
+  background: rgba(255,255,255,.03);
+  color: #f4f1e8;
+  padding: 8px 10px;
+  border-radius: 16px;
+  cursor: pointer;
+}
+
+.dash-account-trigger:hover {
+  border-color: rgba(55,248,181,.28);
+  background: rgba(55,248,181,.06);
+}
+
+.dash-account-caret {
+  color: #8ea6a0;
+  font-size: 18px;
+  line-height: 1;
+}
+
+.dash-account-menu {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  width: 240px;
+  padding: 10px;
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 18px;
+  background: #071014;
+  box-shadow: 0 24px 70px rgba(0,0,0,.45);
+  z-index: 50;
+}
+
+.dash-account-menu-head {
+  padding: 10px 10px 12px;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+  margin-bottom: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.dash-account-menu-head strong {
+  color: #f4f1e8;
+  font-size: 13px;
+}
+
+.dash-account-menu-head span {
+  color: #8ea6a0;
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dash-account-menu button {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: #c8d6d2;
+  text-align: left;
+  padding: 11px 10px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.dash-account-menu button:hover {
+  background: rgba(255,255,255,.06);
+  color: #f4f1e8;
+}
+
+.dash-account-menu button.danger {
+  color: #ff9b9b;
+}
+
+.dash-menu-divider {
+  height: 1px;
+  background: rgba(255,255,255,.08);
+  margin: 8px 0;
+}
+
+@media (max-width: 900px) {
+  .dash-account-menu {
+    left: 0;
+    right: auto;
+  }
+}
+
+.dash-account-menu button {
+  font-size: 14px;
+  font-weight: 700;
+  padding: 10px 12px;
+}
+
+.dash-account-menu {
+  width: 220px;
+}
+
+
+/* Refine account dropdown typography */
+.dash-account-menu {
+  width: 220px;
+}
+
+.dash-account-menu button {
+  font-size: 14px;
+  font-weight: 700;
+  padding: 10px 12px;
+}
+
+.dash-account-menu-head strong {
+  font-size: 14px;
+}
+
+.dash-account-menu-head span {
+  font-size: 12px;
+}
+
+.dash-account-trigger {
+  transition: all .18s ease;
+}
+
+.dash-account-trigger:hover {
+  transform: translateY(-1px);
+}
+
+.dash-account-menu {
+  animation: dashDropdown .16s ease-out;
+  transform-origin: top right;
+}
+
+@keyframes dashDropdown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+

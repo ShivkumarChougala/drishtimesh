@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getMe, logout } from "../api/auth";
 import { getDashboardSummary } from "../api/dashboard";
@@ -9,12 +9,15 @@ import DeployWorkspace from "../components/dashboard/DeployWorkspace";
 
 export default function DashboardPage() {
   const navigate = useNavigate();
+  const accountRef = useRef(null);
+
   const [user, setUser] = useState(null);
   const [summary, setSummary] = useState(null);
   const [status, setStatus] = useState("loading");
   const [refreshKey, setRefreshKey] = useState(0);
   const [hoursFilter, setHoursFilter] = useState(24);
   const [searchQuery, setSearchQuery] = useState("");
+  const [accountOpen, setAccountOpen] = useState(false);
 
   useEffect(() => {
     async function loadDashboard() {
@@ -33,6 +36,28 @@ export default function DashboardPage() {
     loadDashboard();
   }, [navigate]);
 
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (accountRef.current && !accountRef.current.contains(event.target)) {
+        setAccountOpen(false);
+      }
+    }
+
+    function handleEscape(event) {
+      if (event.key === "Escape") {
+        setAccountOpen(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleEscape);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, []);
+
   async function refreshDashboard() {
     try {
       const summaryData = await getDashboardSummary();
@@ -45,6 +70,10 @@ export default function DashboardPage() {
     logout();
     navigate("/");
   }
+
+  const displayName = user?.name || "User";
+  const displayEmail = user?.email || "";
+  const avatarLetter = (displayName || displayEmail || "U")[0].toUpperCase();
 
   return (
     <main className="dashboard-shell dashboard-shell-topnav">
@@ -63,8 +92,41 @@ export default function DashboardPage() {
         </nav>
 
         <div className="dash-actions">
-          <span>{user?.email}</span>
-          <button onClick={handleLogout}>Logout</button>
+          <div className="dash-account" ref={accountRef}>
+            <button
+              type="button"
+              className="dash-account-trigger"
+              onClick={() => setAccountOpen((value) => !value)}
+            >
+              <div className="dash-avatar">{avatarLetter}</div>
+
+              <div className="dash-user-meta">
+                <strong>{displayName}</strong>
+                <span>{displayEmail}</span>
+              </div>
+
+              <span className="dash-account-caret">⌄</span>
+            </button>
+
+            {accountOpen && (
+              <div className="dash-account-menu">
+                <div className="dash-account-menu-head">
+                  <strong>{displayName}</strong>
+                  <span>{displayEmail}</span>
+                </div>
+
+                <button type="button">Account settings</button>
+                <button type="button">My sensors</button>
+                <button type="button">API keys</button>
+
+                <div className="dash-menu-divider"></div>
+
+                <button type="button" className="danger" onClick={handleLogout}>
+                  Logout
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </header>
 
@@ -83,8 +145,14 @@ export default function DashboardPage() {
         {status === "ready" && (
           <>
             <KpiCards summary={summary} />
+
             <section className="dash-wide-row">
-              <ThreatFeed hours={hoursFilter} onHoursChange={setHoursFilter} searchQuery={searchQuery} onSearchChange={setSearchQuery} />
+              <ThreatFeed
+                hours={hoursFilter}
+                onHoursChange={setHoursFilter}
+                searchQuery={searchQuery}
+                onSearchChange={setSearchQuery}
+              />
             </section>
 
             <section className="dash-two-column dashboard-lower-grid">
