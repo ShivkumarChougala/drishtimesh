@@ -411,3 +411,101 @@
     padding: 72px 20px;
   }
 }
+
+
+
+
+
+
+
+/* Google auth button spacing only */
+
+
+
+
+
+
+/* Google button full width */
+
+
+
+
+/* Clean Google auth section */
+.google-auth-wrap {
+  width: 100%;
+  margin-top: 26px;
+  margin-bottom: 6px;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.google-auth-wrap > div {
+  width: 100% !important;
+}
+
+.google-auth-wrap iframe {
+  width: 100% !important;
+  max-width: 100% !important;
+  filter: none !important;
+  opacity: 1 !important;
+}
+
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 24px 0 22px;
+  color: rgba(255,255,255,0.48);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: rgba(255,255,255,0.08);
+}
+
+/* Final Google button clean alignment */
+.google-auth-wrap {
+  width: 100%;
+  margin-top: 26px;
+  margin-bottom: 6px;
+  display: flex;
+  justify-content: flex-start;
+  overflow: visible;
+}
+
+.google-auth-wrap > div {
+  width: auto !important;
+}
+
+.google-auth-wrap iframe {
+  width: 400px !important;
+  max-width: 100% !important;
+  filter: none !important;
+  opacity: 1 !important;
+}
+
+/* Final Google official button alignment */
+.google-auth-wrap {
+  width: 100%;
+  margin-top: 26px;
+  margin-bottom: 6px;
+  display: flex;
+  justify-content: center;
+}
+
+.google-auth-wrap > div {
+  width: auto !important;
+}
+
+.google-auth-wrap iframe {
+  width: 360px !important;
+  max-width: 100% !important;
+  filter: none !important;
+  opacity: 1 !important;
+}

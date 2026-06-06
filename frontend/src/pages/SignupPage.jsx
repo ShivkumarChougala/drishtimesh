@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { signup, saveAuth } from "../api/auth";
+import { GoogleLogin } from "@react-oauth/google";
+import { signup, googleLogin, saveAuth } from "../api/auth";
 
 export default function SignupPage() {
   const navigate = useNavigate();
@@ -24,25 +25,68 @@ export default function SignupPage() {
     }
   }
 
+  async function handleGoogleSuccess(credentialResponse) {
+    setError("");
+    setLoading(true);
+
+    try {
+      const data = await googleLogin(credentialResponse.credential);
+      saveAuth(data);
+      navigate("/dashboard");
+    } catch {
+      setError("Google signup failed");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
     <main className="auth-page">
       <section className="auth-card">
         <div className="auth-badge">Start your mesh</div>
         <h1>Create account</h1>
-        <p>Create your workspace and deploy your first sensor.</p>
+        <p>Join the community-driven threat intelligence mesh and start collecting real-world attack telemetry.</p>
+
+        <div className="google-auth-wrap google-auth-clean">
+          <GoogleLogin
+            onSuccess={handleGoogleSuccess}
+            onError={() => setError("Google signup failed")}
+            text="signup_with"
+            shape="rectangular"
+            theme="outline"
+            size="large"
+            width="360"
+          />
+        </div>
+
+        <div className="auth-divider">
+          <span>OR</span>
+        </div>
 
         <form onSubmit={handleSubmit} className="auth-form">
           <label>Name</label>
-          <input required value={form.name}
-            onChange={(e) => setForm({ ...form, name: e.target.value })} />
+          <input
+            required
+            value={form.name}
+            onChange={(e) => setForm({ ...form, name: e.target.value })}
+          />
 
           <label>Email</label>
-          <input type="email" required value={form.email}
-            onChange={(e) => setForm({ ...form, email: e.target.value })} />
+          <input
+            type="email"
+            required
+            value={form.email}
+            onChange={(e) => setForm({ ...form, email: e.target.value })}
+          />
 
           <label>Password</label>
-          <input type="password" required minLength="6" value={form.password}
-            onChange={(e) => setForm({ ...form, password: e.target.value })} />
+          <input
+            type="password"
+            required
+            minLength="6"
+            value={form.password}
+            onChange={(e) => setForm({ ...form, password: e.target.value })}
+          />
 
           {error && <div className="auth-error">{error}</div>}
 
