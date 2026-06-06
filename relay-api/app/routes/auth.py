@@ -6,6 +6,8 @@ from fastapi.security import OAuth2PasswordBearer
 from jose import jwt, JWTError
 from passlib.context import CryptContext
 from pydantic import BaseModel, EmailStr
+from google.oauth2 import id_token
+from google.auth.transport import requests
 
 from app.db.database import get_db_connection
 
@@ -28,6 +30,10 @@ class SignupRequest(BaseModel):
 class LoginRequest(BaseModel):
     email: EmailStr
     password: str
+
+
+class GoogleAuthRequest(BaseModel):
+    token: str
 
 
 def hash_password(password: str):
@@ -115,6 +121,65 @@ def login(payload: LoginRequest):
 
     if not user or not verify_password(payload.password, user["password_hash"]):
         raise HTTPException(status_code=401, detail="Invalid email or password")
+
+    return {
+        "access_token": create_token(user["id"], user["email"]),
+        "token_type": "bearer",
+        "user": {
+            "id": user["id"],
+            "name": user["name"],
+            "email": user["email"],
+            "created_at": user["created_at"],
+        },
+    }
+
+
+@router.post("/google")
+def google_auth(payload: GoogleAuthRequest):
+    google_client_id = os.getenv("GOOGLE_CLIENT_ID")
+
+    if not google_client_id:
+        raise HTTPException(status_code=500, detail="Google OAuth not configured")
+
+    try:
+        info = id_token.verify_oauth2_token(
+            payload.token,
+            requests.Request(),
+            google_client_id,
+        )
+
+        email = info.get("email")
+        name = info.get("name") or email.split("@")[0]
+
+        if not email:
+            raise HTTPException(status_code=400, detail="Google email not found")
+
+    except Exception:
+        raise HTTPException(status_code=401, detail="Invalid Google token")
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    cur.execute(
+        "SELECT id, name, email, created_at FROM users WHERE email = %s",
+        (email,),
+    )
+    user = cur.fetchone()
+
+    if not user:
+        cur.execute(
+            """
+            INSERT INTO users (name, email, password_hash)
+            VALUES (%s, %s, %s)
+            RETURNING id, name, email, created_at
+            """,
+            (name, email, hash_password(os.urandom(32).hex())),
+        )
+        user = cur.fetchone()
+        conn.commit()
+
+    cur.close()
+    conn.close()
 
     return {
         "access_token": create_token(user["id"], user["email"]),
