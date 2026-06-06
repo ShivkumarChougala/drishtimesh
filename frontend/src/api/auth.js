@@ -14,6 +14,13 @@ export function signup(payload) {
   });
 }
 
+export function googleLogin(token) {
+  return apiFetch("/auth/google", {
+    method: "POST",
+    body: JSON.stringify({ token }),
+  });
+}
+
 export function getMe() {
   const token = localStorage.getItem("drishti_token");
   return apiFetch("/auth/me", {
