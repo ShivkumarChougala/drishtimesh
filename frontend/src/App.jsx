@@ -7,6 +7,7 @@ import LoginPage from "./pages/LoginPage";
 import AuthGatePage from "./pages/AuthGatePage";
 import SignupPage from "./pages/SignupPage";
 import DashboardPage from "./pages/DashboardPage";
+import AccountSettingsPage from "./pages/AccountSettingsPage";
 import ScrollToTop from "./components/ScrollToTop";
 import BlogPage from "./pages/BlogPage";
 import BlogPostPage from "./pages/BlogPostPage";
@@ -30,6 +31,7 @@ export default function App() {
         <Route path="/login/form" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/dashboard/settings" element={<AccountSettingsPage />} />
       </Routes>
     </BrowserRouter>
   );

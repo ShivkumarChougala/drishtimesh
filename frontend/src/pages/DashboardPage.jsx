@@ -115,7 +115,7 @@ export default function DashboardPage() {
                   <span>{displayEmail}</span>
                 </div>
 
-                <button type="button">Account settings</button>
+                <button type="button" onClick={() => { setAccountOpen(false); navigate("/dashboard/settings"); }}>Account settings</button>
                 <button type="button">My sensors</button>
                 <button type="button">API keys</button>
 
