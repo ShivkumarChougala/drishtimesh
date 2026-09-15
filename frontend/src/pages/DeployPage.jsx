@@ -4,6 +4,7 @@ import AnnouncementBar from "../components/AnnouncementBar";
 import Hero from "../components/Hero";
 import MeshStats from "../components/MeshStats";
 import RecentActivity from "../components/RecentActivity";
+import CommunityContributions from "../components/CommunityContributions";
 import TransparencySection from "../components/TransparencySection";
 import LookupCTA from "../components/LookupCTA";
 import Footer from "../components/Footer";
@@ -24,6 +25,7 @@ export default function DeployPage() {
         <Hero onDeploy={handleDeploy} />
         <MeshStats />
         <RecentActivity />
+        <CommunityContributions />
         <TransparencySection />
         <LookupCTA onDeploy={handleDeploy} />
       </main>

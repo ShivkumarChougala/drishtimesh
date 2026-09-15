@@ -2,10 +2,10 @@ import { useEffect, useState } from "react";
 import { getNodeContributions } from "../api/relay";
 
 function formatLastSeen(value) {
-  if (!value) return "unknown";
+  if (!value) return "No heartbeat";
 
   const diff = Date.now() - new Date(value).getTime();
-  const mins = Math.floor(diff / 60000);
+  const mins = Math.max(0, Math.floor(diff / 60000));
 
   if (mins < 1) return "just now";
   if (mins < 60) return `${mins}m ago`;
@@ -13,8 +13,13 @@ function formatLastSeen(value) {
   const hours = Math.floor(mins / 60);
   if (hours < 24) return `${hours}h ago`;
 
-  return `${Math.floor(hours / 24)}d ago`;
+  const days = Math.floor(hours / 24);
+  if (days < 30) return `${days}d ago`;
+
+  const months = Math.floor(days / 30);
+  return `${months}mo ago`;
 }
+
 
 export default function CommunityContributions() {
   const [nodes, setNodes] = useState([]);
@@ -25,14 +30,16 @@ export default function CommunityContributions() {
       try {
         const data = await getNodeContributions();
 
-        const onlineNodes = (data.results || []).filter(
-          (node) => node.status === "online"
+        const contributors = (data.results || []).filter(
+          (node) =>
+            node.contributor_name &&
+            node.contributor_name !== "Community contributor"
         );
 
-        setNodes(onlineNodes);
+        setNodes(contributors);
         setStatus("ready");
       } catch (err) {
-        console.error(err);
+        console.error("Unable to load community contributors:", err);
         setStatus("error");
       }
     }
@@ -40,34 +47,56 @@ export default function CommunityContributions() {
     load();
   }, []);
 
+  const onlineCount = nodes.filter(
+    (node) => node.status === "online"
+  ).length;
+
   return (
     <section className="community-live">
       <div className="community-live-head">
         <div>
           <span className="section-kicker">Community mesh</span>
-          <h2>Active contributor nodes</h2>
+
+          <h2>Community contributors</h2>
+
           <p>
-            Online sensors contributing safe, normalized threat signals.
+            Independent sensors contributing normalized threat intelligence
+            to the DrishtiMesh network.
           </p>
         </div>
 
         <div className="community-live-count">
-          <span className="live-dot"></span>
-          {nodes.length} online
+          <span
+            className={`live-dot ${
+              onlineCount === 0 ? "live-dot-inactive" : ""
+            }`}
+          />
+          {onlineCount} online
         </div>
       </div>
 
       {status === "loading" && (
-        <p className="community-live-muted">Loading contributors...</p>
+        <div className="community-state">
+          Loading contributors...
+        </div>
       )}
 
       {status === "error" && (
-        <p className="community-live-muted">Unable to load contributors.</p>
+        <div className="community-state">
+          Unable to load contributors.
+        </div>
       )}
 
-      {status === "ready" && (
+      {status === "ready" && nodes.length === 0 && (
+        <div className="community-state">
+          No community contributors yet.
+        </div>
+      )}
+
+      {status === "ready" && nodes.length > 0 && (
         <div className="community-node-table">
           <div className="community-node-header">
+            <span>Contributor</span>
             <span>Node</span>
             <span>Region</span>
             <span>Signals</span>
@@ -77,24 +106,52 @@ export default function CommunityContributions() {
 
           {nodes.map((node) => (
             <div className="community-node-row" key={node.node_id}>
-              <div>
+              <div className="contributor-cell">
+                <div className="contributor-info">
+                  <strong>{node.contributor_name}</strong>
+                  <small>{node.sensor_name}</small>
+                </div>
+              </div>
+
+              <div className="community-node-info">
                 <strong>{node.sensor_name}</strong>
-                <small>{node.sensor_type} sensor · {node.provider}</small>
+                <small>
+                  {node.sensor_type || "sensor"}
+                  {node.provider ? ` · ${node.provider}` : ""}
+                </small>
               </div>
 
-              <div>{node.region}</div>
-
-              <div>
-                <strong>{node.signals.toLocaleString()}</strong>
+              <div className="community-region">
+                {node.region || "Unknown region"}
               </div>
 
-              <div>
-                <strong>{node.unique_ips.toLocaleString()}</strong>
+              <div className="community-metric">
+                <strong>
+                  {(node.signals || 0).toLocaleString()}
+                </strong>
               </div>
 
-              <div className="node-status">
-                <span className="live-dot"></span>
-                Online · {formatLastSeen(node.last_seen)}
+              <div className="community-metric">
+                <strong>
+                  {(node.unique_ips || 0).toLocaleString()}
+                </strong>
+              </div>
+
+              <div
+                className={`node-status ${
+                  node.status === "online"
+                    ? "node-status-online"
+                    : "node-status-offline"
+                }`}
+              >
+                <span className="status-dot" />
+
+                <div>
+                  <strong>
+                    {node.status === "online" ? "Online" : "Offline"}
+                  </strong>
+                  <small>{formatLastSeen(node.last_seen)}</small>
+                </div>
               </div>
             </div>
           ))}
