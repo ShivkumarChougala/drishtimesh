@@ -13,7 +13,6 @@ export default function Navbar({ onDeploy }) {
         </Link>
 
         <div className="links">
-          <Link to="/why-drishtimesh">Why DrishtiMesh</Link>
 
           <div className="nav-dropdown">
             <button className="nav-dropdown-trigger">

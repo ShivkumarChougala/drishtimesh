@@ -2,7 +2,6 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import DeployPage from "./pages/DeployPage";
 import LookupPage from "./pages/LookupPage";
-import WhyDrishtiMeshPage from "./pages/WhyDrishtiMeshPage";
 import LoginPage from "./pages/LoginPage";
 import AuthGatePage from "./pages/AuthGatePage";
 import SignupPage from "./pages/SignupPage";
@@ -24,7 +23,6 @@ export default function App() {
       <Routes>
         <Route path="/" element={<DeployPage />} />
         <Route path="/lookup" element={<LookupPage />} />
-        <Route path="/why-drishtimesh" element={<WhyDrishtiMeshPage />} />
         <Route path="/blog" element={<BlogPage />} />
         <Route path="/blog/:slug" element={<BlogPostPage />} />
         <Route path="/login" element={<AuthGatePage />} />

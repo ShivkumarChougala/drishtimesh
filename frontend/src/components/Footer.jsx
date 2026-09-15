@@ -21,7 +21,6 @@ export default function Footer() {
           >
             GitHub
           </a>
-          <Link to="/why-drishtimesh">Why DrishtiMesh</Link>
           <Link to="/deploy">Join the Mesh</Link>
         </div>
       </div>
