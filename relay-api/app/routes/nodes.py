@@ -156,8 +156,8 @@ def node_contributions():
         f"""
         SELECT
             n.node_id,
-            n.api_token,
             COALESCE(n.node_name, LEFT(n.node_id::text, 8)) AS sensor_name,
+            COALESCE(u.name, 'Community contributor') AS contributor_name,
             n.sensor_type,
             n.country,
             n.region,
@@ -168,9 +168,10 @@ def node_contributions():
             COUNT(DISTINCT s.src_ip) AS unique_ips,
             {live_status_sql()}
         FROM nodes n
+        LEFT JOIN users u ON u.id = n.user_id
         LEFT JOIN signals s ON s.node_id = n.node_id
         GROUP BY
-            n.node_id, n.node_name, n.sensor_type, n.country, n.region,
+            n.node_id, n.node_name, u.name, n.sensor_type, n.country, n.region,
             n.provider, n.status, n.last_seen
         ORDER BY signals DESC, n.last_seen DESC NULLS LAST
         LIMIT 5;
@@ -186,8 +187,8 @@ def node_contributions():
         "results": [
             {
                 "node_id": str(row["node_id"]),
-                "api_token": row["api_token"],
                 "sensor_name": row["sensor_name"],
+                "contributor_name": row["contributor_name"],
                 "sensor_type": row["sensor_type"],
                 "region": " · ".join([x for x in [row["country"], row["region"]] if x]) or "Unknown region",
                 "provider": row["provider"],
