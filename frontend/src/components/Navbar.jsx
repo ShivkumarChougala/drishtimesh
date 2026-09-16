@@ -5,7 +5,7 @@ export default function Navbar({ onDeploy }) {
   const isLookup = location.pathname === "/lookup";
 
   return (
-    <header>
+    <header className="site-header">
       <div className="nav">
         <Link to="/" className="brand">
           <div className="brand-icon"></div>
