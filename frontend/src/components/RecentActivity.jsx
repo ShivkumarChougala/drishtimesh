@@ -72,6 +72,7 @@ export default function RecentActivity() {
   const [lastUpdated, setLastUpdated] = useState(null);
 
   const previousIds = useRef(new Set());
+  const hasLoadedOnce = useRef(false);
 
   useEffect(() => {
     let active = true;
@@ -102,11 +103,14 @@ export default function RecentActivity() {
           return {
             ...item,
             __id: id,
-            __new: !previousIds.current.has(id),
+            __new:
+          hasLoadedOnce.current &&
+          !previousIds.current.has(id),
           };
         });
 
         previousIds.current = ids;
+      hasLoadedOnce.current = true;
 
         setItems(nextItems);
         setStatus("ready");

@@ -572,6 +572,46 @@ body.has-top-strip header {
 .recent-stream-row:hover {
   background: rgba(120, 214, 163, .018);
 }
+
+/* Newly observed mesh signal */
+
+.recent-stream-new {
+  animation: recentSignalEnter 1.8s ease-out;
+}
+
+@keyframes recentSignalEnter {
+  0% {
+    opacity: 0;
+    transform: translateY(-10px);
+    background: rgba(120, 214, 163, .10);
+    box-shadow: inset 2px 0 0 #78d6a3;
+  }
+
+  18% {
+    opacity: 1;
+    transform: translateY(0);
+    background: rgba(120, 214, 163, .07);
+    box-shadow: inset 2px 0 0 #78d6a3;
+  }
+
+  55% {
+    background: rgba(120, 214, 163, .025);
+    box-shadow: inset 2px 0 0 rgba(120, 214, 163, .45);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+    background: transparent;
+    box-shadow: inset 0 0 0 transparent;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .recent-stream-new {
+    animation: none;
+  }
+}
 /* Source */
 
 .recent-source {
