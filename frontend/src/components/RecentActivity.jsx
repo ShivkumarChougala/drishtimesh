@@ -1,116 +1,76 @@
 import { useEffect, useRef, useState } from "react";
 import { getRecentFeed } from "../api/relay";
 
-function formatTime(value) {
+function formatRelativeTime(value) {
   if (!value) return "—";
+
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "—";
-  return date.toLocaleString();
+
+  const seconds = Math.max(
+    0,
+    Math.floor((Date.now() - date.getTime()) / 1000)
+  );
+
+  if (seconds < 60) return `${seconds}s ago`;
+
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes}m ago`;
+
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+
+  const days = Math.floor(hours / 24);
+  return `${days}d ago`;
 }
 
 function normalizeSeverity(value) {
-  if (!value) return "unknown";
-  return String(value).toLowerCase();
+  return String(value || "unknown").toLowerCase();
 }
 
-function severityRank(value) {
-  const severity = normalizeSeverity(value);
-  if (severity === "critical") return 4;
-  if (severity === "high") return 3;
-  if (severity === "medium") return 2;
-  if (severity === "low") return 1;
-  return 0;
-}
+function signalLabel(value) {
+  const signal = String(value || "unknown");
 
-function getTime(item) {
-  return (
-    item.observed_at ||
-    item.created_at ||
-    item.timestamp ||
-    item.time ||
-    item.received_at ||
-    item.last_seen ||
-    item.first_seen ||
-    null
-  );
-}
-
-function getSourceIp(item) {
-  return item.src_ip || item.source_ip || item.ip || "unknown";
-}
-
-function getSignal(item) {
-  return item.signal_type || item.event_type || item.eventid || item.signal || "unknown";
-}
-
-function getSensor(item) {
-  return item.sensor || item.sensor_type || "cowrie";
-}
-
-function signalLabel(signal) {
   const labels = {
     attack_chain_summary: "Attack chain",
     payload_upload: "Payload upload",
     destructive_command: "Destructive command",
-    persistence_attempt: "Persistence",
-    execution_attempt: "Execution",
+    persistence_attempt: "Persistence attempt",
+    execution_attempt: "Execution attempt",
     permission_change: "Permission change",
     ssh_bruteforce: "SSH brute force",
     interactive_access: "Interactive access",
+    login_attempt: "Login attempt",
+    command_input: "Command activity",
   };
 
-  return labels[signal] || String(signal).replaceAll("_", " ");
+  return (
+    labels[signal] ||
+    signal
+      .replaceAll("_", " ")
+      .replace(/\b\w/g, (char) => char.toUpperCase())
+  );
 }
 
-function activityTitle(item) {
-  if (item.signals.includes("attack_chain_summary")) return "Critical activity chain";
-  if (item.signals.includes("ssh_bruteforce")) return "SSH brute-force activity";
-  if (item.signals.includes("destructive_command")) return "Destructive command activity";
-  if (item.signals.includes("persistence_attempt")) return "Persistence behavior";
-  return "Suspicious sensor activity";
-}
+function reputationLabel(item) {
+  if (item.verdict) {
+    return String(item.verdict)
+      .replaceAll("_", " ")
+      .replace(/\b\w/g, (char) => char.toUpperCase());
+  }
 
-function groupByIp(feed) {
-  const groups = new Map();
+  if (item.score !== null && item.score !== undefined) {
+    return `Score ${item.score}`;
+  }
 
-  feed.forEach((item) => {
-    const ip = getSourceIp(item);
-
-    if (!groups.has(ip)) {
-      groups.set(ip, {
-        src_ip: ip,
-        sensor: getSensor(item),
-        severity: normalizeSeverity(item.severity),
-        time: getTime(item),
-        signals: [],
-        eventCount: 0,
-      });
-    }
-
-    const group = groups.get(ip);
-    const signal = getSignal(item);
-
-    if (!group.signals.includes(signal)) group.signals.push(signal);
-
-    group.eventCount += 1;
-
-    if (severityRank(item.severity) > severityRank(group.severity)) {
-      group.severity = normalizeSeverity(item.severity);
-    }
-
-    const itemTime = getTime(item);
-    if (itemTime && (!group.time || new Date(itemTime) > new Date(group.time))) {
-      group.time = itemTime;
-    }
-  });
-
-  return Array.from(groups.values()).slice(0, 5);
+  return "Unclassified";
 }
 
 export default function RecentActivity() {
   const [items, setItems] = useState([]);
   const [status, setStatus] = useState("loading");
   const [lastUpdated, setLastUpdated] = useState(null);
+
   const previousIds = useRef(new Set());
 
   useEffect(() => {
@@ -119,15 +79,24 @@ export default function RecentActivity() {
     async function loadFeed() {
       try {
         const data = await getRecentFeed();
-        const feed = Array.isArray(data) ? data : data?.items || data?.signals || data?.results || [];
+
+        const feed = Array.isArray(data)
+          ? data
+          : data?.results || data?.items || data?.signals || [];
 
         if (!active) return;
 
-        const nextItems = groupByIp(feed);
         const ids = new Set();
 
-        const enhanced = nextItems.map((item) => {
-          const id = `${item.src_ip}-${item.eventCount}-${item.severity}`;
+        const nextItems = feed.slice(0, 8).map((item, index) => {
+          const id = [
+            item.src_ip,
+            item.signal_type,
+            item.eventid,
+            item.observed_at,
+            index,
+          ].join("-");
+
           ids.add(id);
 
           return {
@@ -138,17 +107,21 @@ export default function RecentActivity() {
         });
 
         previousIds.current = ids;
-        setItems(enhanced);
+
+        setItems(nextItems);
         setStatus("ready");
         setLastUpdated(new Date());
-      } catch (err) {
-        console.error(err);
+      } catch (error) {
+        console.error("Unable to load recent mesh activity:", error);
+
         if (!active) return;
+
         setStatus("error");
       }
     }
 
     loadFeed();
+
     const interval = setInterval(loadFeed, 10000);
 
     return () => {
@@ -158,79 +131,112 @@ export default function RecentActivity() {
   }, []);
 
   return (
-    <section className="recent-activity">
+    <section id="recent-activity" className="recent-activity recent-activity-v2">
       <div className="recent-head">
         <div>
-          <div className="kicker">Recent mesh activity</div>
-          <h2>Signals arriving from deployed sensors.</h2>
+          <span className="section-kicker">Recent activity</span>
+          <h2>Signals observed across the mesh.</h2>
         </div>
 
-        <span className={`feed-status ${status}`}>
-          {status === "loading" && "Loading"}
-          {status === "ready" && (lastUpdated ? `Live feed · ${lastUpdated.toLocaleTimeString()}` : "Live feed")}
-          {status === "error" && "Feed unavailable"}
-        </span>
+        <div className={`recent-feed-state ${status}`}>
+          <span className="recent-feed-dot" />
+
+          <span>
+            {status === "loading" && "Connecting"}
+            {status === "ready" && "Live"}
+            {status === "error" && "Unavailable"}
+          </span>
+        </div>
       </div>
 
-      <div className="activity-table">
-        <div className="activity-table-head">
+      <div className="recent-stream">
+        <div className="recent-stream-head">
           <span>Source</span>
-          <span>Activity</span>
-          <span>Risk</span>
-          <span>Events</span>
+          <span>Signal</span>
+          <span>Reputation</span>
           <span>Sensor</span>
-          <span>Last seen</span>
+          <span>Observed</span>
         </div>
 
-        {items.map((item) => {
-          const severity = normalizeSeverity(item.severity);
-
-          return (
-            <div className="activity-table-row" key={item.__id}>
-              <div>
-                <strong>{item.src_ip}</strong>
-              </div>
-
-              <div>
-                <strong>{activityTitle(item)}</strong>
-                <p>
-                  {item.signals.slice(0, 3).map(signalLabel).join(" · ")}
-                </p>
-              </div>
-
-              <div>
-                <strong className={`severity-badge severity-${severity}`}>
-                  {severity}
-                </strong>
-              </div>
-
-              <div>
-                <strong>{item.eventCount}</strong>
-              </div>
-
-              <div>
-                <strong>{item.sensor}</strong>
-              </div>
-
-              <div>
-                <span>{formatTime(item.time)}</span>
-              </div>
-            </div>
-          );
-        })}
-
-        {items.length === 0 && status === "ready" && (
-          <div className="activity-empty">No recent signals yet.</div>
-        )}
-
         {status === "loading" && (
-          <div className="activity-empty">Loading recent signals…</div>
+          <div className="recent-stream-state">
+            Loading recent signals...
+          </div>
         )}
 
         {status === "error" && (
-          <div className="activity-empty error">Could not load recent activity from relay.</div>
+          <div className="recent-stream-state recent-stream-error">
+            Recent activity is temporarily unavailable.
+          </div>
         )}
+
+        {status === "ready" && items.length === 0 && (
+          <div className="recent-stream-state">
+            No recent signals observed.
+          </div>
+        )}
+
+        {status === "ready" &&
+          items.map((item) => {
+            const severity = normalizeSeverity(item.severity);
+
+            return (
+              <div
+                className={`recent-stream-row ${
+                  item.__new ? "recent-stream-new" : ""
+                }`}
+                key={item.__id}
+              >
+                <div className="recent-source">
+                  <strong>{item.src_ip || "Unknown"}</strong>
+                </div>
+
+                <div className="recent-signal">
+                  <strong>{signalLabel(item.signal_type)}</strong>
+
+                  <span className={`recent-severity severity-${severity}`}>
+                    {severity}
+                  </span>
+                </div>
+
+                <div className="recent-reputation">
+                  <span>{reputationLabel(item)}</span>
+
+                  {item.observed_by_nodes > 1 && (
+                    <small>
+                      {item.observed_by_nodes} sensors
+                    </small>
+                  )}
+                </div>
+
+                <div className="recent-sensor">
+                  {item.sensor || "Unknown"}
+                </div>
+
+                <time dateTime={item.observed_at || undefined}>
+                  {formatRelativeTime(item.observed_at)}
+                </time>
+              </div>
+            );
+          })}
       </div>
+
+      {status === "ready" && (
+        <div className="recent-stream-footer">
+          <span>
+            Showing latest {items.length} mesh signals
+          </span>
+
+          {lastUpdated && (
+            <span>
+              Updated {lastUpdated.toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
+            </span>
+          )}
+        </div>
+      )}
     </section>
   );
 }

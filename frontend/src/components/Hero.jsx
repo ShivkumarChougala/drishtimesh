@@ -11,7 +11,7 @@ export default function Hero({ onDeploy }) {
         <h1>
           Deploy in minutes.
           <br />
-          <span className="hero-green hero-nowrap">
+          <span className="hero-green">
             Start contributing immediately.
           </span>
         </h1>
