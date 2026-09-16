@@ -180,13 +180,68 @@ def dashboard_timeline(
 def dashboard_live_events(
     limit: int = 20,
     hours: int = 24,
+    offset: int = 0,
+    search: str = "",
+    verdict: str = "all",
     current_user=Depends(get_current_user)
 ):
+    # Keep dashboard queries bounded.
+    limit = max(1, min(limit, 100))
+    offset = max(0, offset)
+    hours = max(1, min(hours, 24 * 30))
+
+    search = search.strip()
+    verdict = verdict.strip().lower()
+
     conn = get_db_connection()
     cur = conn.cursor()
 
-    cur.execute(
-        """
+    filters = [
+        "n.user_id = %s",
+        "s.observed_at >= NOW() - (%s || ' hours')::interval"
+    ]
+
+    params = [
+        current_user["id"],
+        hours
+    ]
+
+    if search:
+        filters.append(
+            """(
+                s.src_ip::text ILIKE %s
+                OR COALESCE(s.signal_type, '') ILIKE %s
+                OR COALESCE(s.sensor, '') ILIKE %s
+                OR COALESCE(s.eventid, '') ILIKE %s
+            )"""
+        )
+
+        pattern = f"%{search}%"
+        params.extend([pattern, pattern, pattern, pattern])
+
+    if verdict != "all":
+        filters.append(
+            "LOWER(COALESCE(r.verdict, s.severity, 'unknown')) = %s"
+        )
+        params.append(verdict)
+
+    where_sql = " AND ".join(filters)
+
+    count_query = f"""
+        SELECT COUNT(*) AS total
+        FROM signals s
+        JOIN nodes n
+            ON s.node_id = n.node_id
+        LEFT JOIN ip_reputation r
+            ON s.src_ip = r.ip
+        WHERE {where_sql};
+    """
+
+    cur.execute(count_query, tuple(params))
+    count_row = cur.fetchone()
+    total = count_row["total"] if count_row else 0
+
+    data_query = f"""
         SELECT
             s.src_ip,
             s.signal_type,
@@ -202,14 +257,15 @@ def dashboard_live_events(
             ON s.node_id = n.node_id
         LEFT JOIN ip_reputation r
             ON s.src_ip = r.ip
-        WHERE n.user_id = %s
-          AND s.observed_at >= NOW() - (%s || ' hours')::interval
+        WHERE {where_sql}
         ORDER BY s.observed_at DESC
-        LIMIT %s;
-        """,
-        (current_user["id"], hours, limit)
-    )
+        LIMIT %s
+        OFFSET %s;
+    """
 
+    data_params = params + [limit, offset]
+
+    cur.execute(data_query, tuple(data_params))
     rows = cur.fetchall()
 
     cur.close()
@@ -218,6 +274,9 @@ def dashboard_live_events(
     return {
         "hours": hours,
         "count": len(rows),
+        "total": total,
+        "limit": limit,
+        "offset": offset,
         "results": rows
     }
 
