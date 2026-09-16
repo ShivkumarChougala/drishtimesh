@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { getDashboardLiveEvents } from "../../api/dashboard";
-import DashboardCommandBar from "./DashboardCommandBar";
 
 function formatTime(value) {
-  if (!value) return "unknown";
+  if (!value) return "—";
+
   try {
     return new Date(value).toLocaleTimeString(undefined, {
       hour: "2-digit",
@@ -15,21 +15,22 @@ function formatTime(value) {
 }
 
 function normalizeVerdict(value) {
-  return String(value || "unknown").toLowerCase().replaceAll("_", "-");
+  return String(value || "unknown")
+    .toLowerCase()
+    .replaceAll("_", "-")
+    .replaceAll(" ", "-");
 }
 
-export default function ThreatFeed({ hours = 24, onHoursChange, searchQuery = "", onSearchChange }) {
+export default function ThreatFeed({ hours = 24 }) {
   const [events, setEvents] = useState([]);
   const [status, setStatus] = useState("loading");
-  const [lastUpdated, setLastUpdated] = useState(null);
 
   async function loadEvents(silent = false) {
     try {
       if (!silent) setStatus("loading");
 
-      const data = await getDashboardLiveEvents(20, hours);
+      const data = await getDashboardLiveEvents(8, hours);
       setEvents(data.results || []);
-      setLastUpdated(new Date());
       setStatus("ready");
     } catch {
       if (!silent) setStatus("error");
@@ -46,116 +47,87 @@ export default function ThreatFeed({ hours = 24, onHoursChange, searchQuery = ""
     return () => clearInterval(timer);
   }, [hours]);
 
-  const filteredEvents = events.filter((event) => {
-    const query = searchQuery.trim().toLowerCase();
-    if (!query) return true;
-
-    return [
-      event.src_ip,
-      event.signal_type,
-      event.sensor,
-      event.verdict,
-      event.severity,
-      event.eventid,
-    ]
-      .filter(Boolean)
-      .some((value) => String(value).toLowerCase().includes(query));
-  });
-
   return (
-    <section className="dash-panel threat-feed-panel">
-      <div className="feed-head">
+    <section className="overview-feed">
+      <div className="overview-section-head">
         <div>
-          <span className="timeline-kicker">Signals</span>
-          <div className="feed-title-row">
-            <h2>Threat Feed</h2>
-            <span className="live-pill">Live</span>
-          </div>
-          <p className="dash-muted">
-            Latest observed activity from your deployed sensors.
-          </p>
-          {lastUpdated && (
-            <small className="feed-updated">
-              Updated {lastUpdated.toLocaleTimeString()}
-            </small>
-          )}
+          <span className="overview-section-label">Recent signals</span>
+          <h2>Latest activity</h2>
         </div>
+
+        <button type="button" className="overview-text-action">
+          View all signals →
+        </button>
       </div>
 
-      <DashboardCommandBar
-        hours={hours}
-        onHoursChange={onHoursChange}
-        searchQuery={searchQuery}
-        onSearchChange={onSearchChange}
-      />
+      {status === "loading" && (
+        <div className="overview-empty">Loading recent activity...</div>
+      )}
 
-      {status === "loading" && <p className="dash-muted">Loading threat feed...</p>}
-      {status === "error" && <p className="dash-muted">Failed to load threat feed.</p>}
+      {status === "error" && (
+        <div className="overview-empty">Unable to load recent activity.</div>
+      )}
 
       {status === "ready" && events.length === 0 && (
-        <div className="empty-state">
-          <strong>No threat activity yet</strong>
-          <p className="dash-muted">
-            Deploy a sensor and incoming signals will appear here.
-          </p>
+        <div className="overview-empty">
+          <strong>No signals in this window</strong>
+          <span>Incoming sensor activity will appear here.</span>
         </div>
       )}
 
-      {status === "ready" && events.length > 0 && filteredEvents.length === 0 && (
-        <div className="empty-state">
-          <strong>No matching signals</strong>
-          <p className="dash-muted">Try another IP, sensor, or signal type.</p>
-        </div>
-      )}
-
-      {status === "ready" && filteredEvents.length > 0 && (
-        <div className="threat-table-wrap">
-          <table className="threat-table">
+      {status === "ready" && events.length > 0 && (
+        <div className="overview-table-wrap">
+          <table className="overview-table">
             <thead>
               <tr>
                 <th>Time</th>
                 <th>Source IP</th>
-                <th>Signal</th>
+                <th>Event</th>
                 <th>Sensor</th>
                 <th>Verdict</th>
-                <th>Score</th>
               </tr>
             </thead>
 
             <tbody>
-              {filteredEvents.map((event, index) => {
+              {events.map((event, index) => {
                 const verdict = event.verdict || event.severity || "unknown";
                 const verdictClass = normalizeVerdict(verdict);
 
                 return (
                   <tr key={`${event.src_ip}-${event.observed_at}-${index}`}>
-                    <td>{formatTime(event.observed_at)}</td>
+                    <td className="overview-time">
+                      {formatTime(event.observed_at)}
+                    </td>
+
                     <td>
                       {event.src_ip ? (
                         <button
                           type="button"
-                          className="threat-ip threat-ip-link threat-ip-button"
-                          onClick={() => {
+                          className="overview-ip"
+                          onClick={() =>
                             window.open(
                               `/lookup?ip=${encodeURIComponent(event.src_ip)}`,
                               "_blank"
-                            );
-                          }}
+                            )
+                          }
                         >
                           {event.src_ip}
                         </button>
                       ) : (
-                        <strong className="threat-ip">unknown</strong>
+                        "—"
                       )}
                     </td>
+
                     <td>{event.signal_type || "unknown"}</td>
                     <td>{event.sensor || "sensor"}</td>
+
                     <td>
-                      <span className={`risk-badge ${verdictClass}`}>
+                      <span
+                        className={`overview-verdict overview-verdict-${verdictClass}`}
+                      >
                         {verdict}
                       </span>
                     </td>
-                    <td>{event.score ?? event.confidence ?? 0}</td>
                   </tr>
                 );
               })}
